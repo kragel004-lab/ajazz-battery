@@ -1,0 +1,16 @@
+# Сборка
+bin/
+obj/
+dist/
+tmp/
+*.user
+*.suo
+.vs/
+
+# Встроенное в установщик приложение создаётся build.ps1
+src/AjazzBattery/payload/
+src/AjazzBattery.Setup/payload/
+
+# Локальные артефакты
+*.log
+
