@@ -1,3 +1,5 @@
+using System.Runtime.InteropServices;
+
 namespace AjazzBattery;
 
 /// <summary>
@@ -6,9 +8,14 @@ namespace AjazzBattery;
 /// </summary>
 internal sealed class TaskbarAnchor : Form
 {
+    private static readonly int TaskbarCreatedMessage = RegisterWindowMessage("TaskbarCreated");
+
     private readonly TrayContext _context;
     private readonly System.Windows.Forms.Timer _armTimer;
     private bool _armed;
+
+    [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+    private static extern int RegisterWindowMessage(string message);
 
     public TaskbarAnchor(TrayContext context)
     {
@@ -45,6 +52,21 @@ internal sealed class TaskbarAnchor : Form
 
         Icon = icon;
         Text = tooltip;
+    }
+
+    protected override void WndProc(ref Message m)
+    {
+        // Explorer перезапустился — пересоздаём кнопку на панели задач
+        if (m.Msg == TaskbarCreatedMessage && m.Msg != 0)
+        {
+            bool armed = _armed;
+            _armed = false;
+            ShowInTaskbar = false;
+            ShowInTaskbar = true;
+            _armed = armed;
+        }
+
+        base.WndProc(ref m);
     }
 
     protected override void OnActivated(EventArgs e)
