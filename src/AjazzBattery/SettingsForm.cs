@@ -233,7 +233,7 @@ internal sealed class SettingsForm : Form
         DrawRowText(g, CardOne, 2, "Уведомлять о низком заряде");
 
         DrawRowText(g, CardTwo, 0, "Запускать при входе в Windows");
-        DrawRowText(g, CardTwo, 1, "Иконка с процентом на панели задач");
+        DrawRowText(g, CardTwo, 1, "Виджет с процентом на панели задач");
         DrawRowText(g, CardTwo, 2, "Процент вместо батарейки в трее");
 
         DrawRowText(g, CardThree, 0, "Синхронизировать часы док-станции");
@@ -285,3 +285,4 @@ internal sealed class SettingsForm : Form
         base.Dispose(disposing);
     }
 }
+

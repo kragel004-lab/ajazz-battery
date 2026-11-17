@@ -18,7 +18,7 @@ internal sealed class TrayContext : ApplicationContext
 
     private PanelForm? _panel;
     private SettingsForm? _settings;
-    private TaskbarAnchor? _anchor;
+    private TaskbarWidget? _widget;
     private Icon? _currentIcon;
     private BatteryReading? _last;
     private bool _polling;
@@ -152,25 +152,25 @@ internal sealed class TrayContext : ApplicationContext
     {
         if (Config.ShowTaskbarIcon)
         {
-            if (_anchor is null || _anchor.IsDisposed)
+            if (_widget is null || _widget.IsDisposed)
             {
-                _anchor = new TaskbarAnchor(this);
-                _anchor.Show();
+                _widget = new TaskbarWidget(this);
+                _widget.Show();
                 if (_last is not null)
                 {
-                    UpdateIcons(_last);
+                    _widget.UpdateValue(_last.Found ? _last.Percent : null, _charging);
                 }
             }
         }
-        else if (_anchor is not null)
+        else if (_widget is not null)
         {
-            _anchor.Hide();
-            _anchor.Dispose();
-            _anchor = null;
+            _widget.Hide();
+            _widget.Dispose();
+            _widget = null;
         }
     }
 
-    public void OnTaskbarButtonClicked()
+    public void TogglePanelFromWidget()
     {
         if (_panel is { Visible: true })
         {
@@ -316,12 +316,9 @@ internal sealed class TrayContext : ApplicationContext
         _currentIcon?.Dispose();
         _currentIcon = icon;
 
-        if (_anchor is { IsDisposed: false })
+        if (_widget is { IsDisposed: false })
         {
-            var anchorIcon = BatteryGlyph.Create(reading.Found ? reading.Percent : null, Config.ShowPercentOnIcon);
-            _anchor.UpdateState(anchorIcon, reading.Found
-                ? $"AJAZZ AJ159 APEX — {reading.Percent}%{(_charging ? " · заряжается" : string.Empty)}"
-                : "AJAZZ — мышь не найдена");
+            _widget.UpdateValue(reading.Found ? reading.Percent : null, _charging);
         }
     }
 
@@ -468,7 +465,9 @@ internal sealed class TrayContext : ApplicationContext
         _currentIcon?.Dispose();
         _panel?.Dispose();
         _settings?.Dispose();
-        _anchor?.Dispose();
+        _widget?.Dispose();
         base.ExitThreadCore();
     }
 }
+
+
