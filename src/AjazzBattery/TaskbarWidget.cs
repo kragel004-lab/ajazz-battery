@@ -30,6 +30,8 @@ internal sealed class TaskbarWidget : Form
     private Point _lastPoint = new(int.MinValue, int.MinValue);
     private Size _lastSize = Size.Empty;
     private string _lastText = string.Empty;
+    private bool _contentDrawn;
+    private int _ticks;
 
     public TaskbarWidget(TrayContext context)
     {
@@ -40,7 +42,7 @@ internal sealed class TaskbarWidget : Form
         BackColor = Color.Black;
         Size = new Size(96, 32);
 
-        _layoutTimer = new System.Windows.Forms.Timer { Interval = 3000 };
+        _layoutTimer = new System.Windows.Forms.Timer { Interval = 1000 };
         _layoutTimer.Tick += (_, _) =>
         {
             if (!IsDisposed && IsHandleCreated)
@@ -105,6 +107,8 @@ internal sealed class TaskbarWidget : Form
         if (e.Button == MouseButtons.Left)
         {
             _context.TogglePanelFromWidget();
+            // после клика заново подтверждаем, что виджет сверху
+            BeginInvoke(new Action(ApplyLayout));
         }
     }
 
@@ -113,32 +117,43 @@ internal sealed class TaskbarWidget : Form
         var taskbar = TaskbarInfo.Acquire();
         if (taskbar is null || !taskbar.IsUsable)
         {
+            if (Visible)
+            {
+                Logger.Info($"Виджет скрыт: taskbar={taskbar is not null}, usable={taskbar?.IsUsable}");
+            }
+
             Visible = false;
+            _contentDrawn = false;
             _lastPoint = new Point(int.MinValue, int.MinValue);
             return;
         }
 
         _scale = DeviceDpi / 96f;
         string text = _percent.HasValue ? $"{_percent.Value}%" : "—";
+        _ticks++;
 
-        if (text == _lastText && _lastSize != Size.Empty)
+        // раз в ~30 секунд перерисовываем принудительно: лечит любые сбои композиции
+        bool needRender = !_contentDrawn || text != _lastText || _lastSize == Size.Empty || _ticks % 10 == 0;
+
+        if (!needRender)
         {
             var moved = taskbar.PlaceWidget(_lastSize.Width, _lastSize.Height);
-            if (moved != _lastPoint || !Visible)
+            if (!Visible)
             {
                 Visible = true;
-                SetWindowPos(Handle, HwndTopMost, moved.X, moved.Y, _lastSize.Width, _lastSize.Height,
-                    SwpNoActivate | SwpShowWindow | (uint)SwpNoSize);
-                _lastPoint = moved;
             }
 
+            // каждый тик подтверждаем верхний z-порядок: панель задач перерисовывается и может перекрыть виджет
+            SetWindowPos(Handle, HwndTopMost, moved.X, moved.Y, _lastSize.Width, _lastSize.Height,
+                SwpNoActivate | SwpShowWindow | (uint)SwpNoSize);
+            _lastPoint = moved;
             return;
         }
 
         using var bitmap = Render(text);
         var point = taskbar.PlaceWidget(bitmap.Width, bitmap.Height);
         Visible = true;
-        UpdateLayered(bitmap, point);
+        _contentDrawn = UpdateLayered(bitmap, point);
         _lastText = text;
         _lastSize = bitmap.Size;
         _lastPoint = point;
@@ -214,7 +229,7 @@ internal sealed class TaskbarWidget : Form
         g.FillPolygon(brush, points);
     }
 
-    private void UpdateLayered(Bitmap bitmap, Point location)
+    private bool UpdateLayered(Bitmap bitmap, Point location)
     {
         IntPtr screenDc = GetDC(IntPtr.Zero);
         IntPtr memoryDc = CreateCompatibleDC(screenDc);
@@ -244,6 +259,8 @@ internal sealed class TaskbarWidget : Form
             {
                 Logger.Warn($"Виджет не отрисован: {Marshal.GetLastWin32Error()}");
             }
+
+            return ok;
         }
         finally
         {
@@ -300,3 +317,6 @@ internal sealed class TaskbarWidget : Form
     [DllImport("gdi32.dll")]
     private static extern bool DeleteObject(IntPtr hObject);
 }
+
+
+
