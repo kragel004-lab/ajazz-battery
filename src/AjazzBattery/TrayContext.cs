@@ -178,6 +178,12 @@ internal sealed class TrayContext : ApplicationContext
             return;
         }
 
+        // клик по виджету сначала снимает фокус с панели (она прячется сама) — не открываем её снова
+        if (_panel is not null && (DateTime.UtcNow - _panel.LastAutoHide).TotalMilliseconds < 400)
+        {
+            return;
+        }
+
         TogglePanel();
     }
 
@@ -469,5 +475,8 @@ internal sealed class TrayContext : ApplicationContext
         base.ExitThreadCore();
     }
 }
+
+
+
 
 

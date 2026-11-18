@@ -19,6 +19,8 @@ internal sealed class PanelForm : Form
     private DateTime? _updated;
     private string _subtitle = "Приёмник 2.4 ГГц";
 
+    private readonly System.Windows.Forms.Timer _focusTimer = new() { Interval = 250 };
+    private DateTime _focusGrace = DateTime.MinValue;
     private bool _dragging;
     private Point _dragStart;
 
@@ -74,6 +76,7 @@ internal sealed class PanelForm : Form
         Controls.AddRange(new Control[] { _refreshButton, _settingsButton, _moreButton, _closeButton });
 
         Theme.Changed += OnThemeChanged;
+        _focusTimer.Tick += OnFocusTimerTick;
     }
 
     protected override CreateParams CreateParams
@@ -110,6 +113,9 @@ internal sealed class PanelForm : Form
     }
 
     [System.ComponentModel.DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)]
+    public DateTime LastAutoHide { get; private set; }
+
+    [System.ComponentModel.DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)]
     public bool SuppressAutoHide { get; set; }
 
     public void SuppressHide() => SuppressAutoHide = true;
@@ -134,8 +140,15 @@ internal sealed class PanelForm : Form
         var area = screen.WorkingArea;
         Location = new Point(area.Right - Width - 12, area.Bottom - Height - 12);
         Show();
+        NativeUi.ForceForeground(this);
         Activate();
         BringToFront();
+
+        // клик по виджету активирует панель задач, из-за чего панель тут же теряет фокус —
+        // даём ей «карантин» и один раз перехватываем фокус обратно
+        _focusGrace = DateTime.UtcNow.AddMilliseconds(600);
+        _focusTimer.Stop();
+        _focusTimer.Start();
     }
 
     public void ToggleNearTray()
@@ -150,11 +163,32 @@ internal sealed class PanelForm : Form
         }
     }
 
+    private void OnFocusTimerTick(object? sender, EventArgs e)
+    {
+        _focusTimer.Stop();
+        if (!Visible || SuppressAutoHide || _context.IsSettingsOpen)
+        {
+            return;
+        }
+
+        if (!NativeUi.IsForeground(this))
+        {
+            NativeUi.ForceForeground(this);
+            Activate();
+        }
+    }
+
     protected override void OnDeactivate(EventArgs e)
     {
         base.OnDeactivate(e);
+        if (DateTime.UtcNow < _focusGrace)
+        {
+            return;
+        }
+
         if (!SuppressAutoHide && !_context.IsSettingsOpen)
         {
+            LastAutoHide = DateTime.UtcNow;
             Hide();
         }
     }
@@ -343,4 +377,7 @@ internal sealed class PanelForm : Form
         g.DrawString(value, valueFont, valueBrush, row, right);
     }
 }
+
+
+
 

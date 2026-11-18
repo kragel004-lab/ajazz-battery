@@ -51,6 +51,19 @@ internal static class NativeUi
         }
     }
 
+    [DllImport("user32.dll")]
+    private static extern bool SetForegroundWindow(IntPtr hwnd);
+
+    [DllImport("user32.dll")]
+    private static extern IntPtr GetForegroundWindow();
+
+    public static void ForceForeground(Form form)
+    {
+        SetForegroundWindow(form.Handle);
+    }
+
+    public static bool IsForeground(Form form) => GetForegroundWindow() == form.Handle;
+
     public static void DragWindow(Form form, Control header)
     {
         header.MouseDown += (_, e) =>
@@ -257,3 +270,4 @@ internal sealed class FlatToggle : Control
         g.FillEllipse(knob, x, 3, knobSize, knobSize);
     }
 }
+
