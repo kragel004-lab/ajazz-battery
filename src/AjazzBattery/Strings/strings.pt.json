@@ -54,6 +54,7 @@
   "settings.clockSync": "Sincronizar o relógio da base de carregamento",
   "settings.clockInterval": "Intervalo de sincronização, min",
   "settings.language": "Idioma da interface",
+  "settings.languageAuto": "Automático (sistema)",
   "settings.save": "Salvar",
   "settings.cancel": "Cancelar",
   "settings.footer": "Arquivo de configurações: %APPDATA%\\AJAZZBattery\\config.json",

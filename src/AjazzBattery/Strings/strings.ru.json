@@ -54,6 +54,7 @@
   "settings.clockSync": "Синхронизировать часы док-станции",
   "settings.clockInterval": "Интервал синхронизации, мин",
   "settings.language": "Язык интерфейса",
+  "settings.languageAuto": "Авто (системный)",
   "settings.save": "Сохранить",
   "settings.cancel": "Отмена",
   "settings.footer": "Файл настроек: %APPDATA%\\AJAZZBattery\\config.json",

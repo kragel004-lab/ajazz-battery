@@ -54,6 +54,7 @@
   "settings.clockSync": "Synchroniser l'horloge de la station",
   "settings.clockInterval": "Intervalle de synchronisation, min",
   "settings.language": "Langue de l'interface",
+  "settings.languageAuto": "Automatique (système)",
   "settings.save": "Enregistrer",
   "settings.cancel": "Annuler",
   "settings.footer": "Fichier de paramètres : %APPDATA%\\AJAZZBattery\\config.json",

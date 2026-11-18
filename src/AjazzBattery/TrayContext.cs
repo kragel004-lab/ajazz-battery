@@ -98,13 +98,14 @@ internal sealed class TrayContext : ApplicationContext
     {
         var menu = new ContextMenuStrip
         {
-            Renderer = new ToolStripProfessionalRenderer(new DarkColorTable()),
+            // RenderMode задаём до Renderer: установка режима пересоздаёт рендерер по умолчанию
+            RenderMode = ToolStripRenderMode.Professional,
+            Renderer = new DarkMenuRenderer(),
             ShowImageMargin = false,
             BackColor = Theme.Card,
             ForeColor = Theme.TextPrimary,
             Font = Theme.Body(9.75f),
             Padding = new Padding(4),
-            RenderMode = ToolStripRenderMode.Professional,
         };
 
         menu.Items.Add(_statusItem);

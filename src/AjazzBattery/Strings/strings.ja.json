@@ -54,6 +54,7 @@
   "settings.clockSync": "ドックステーションの時計を同期する",
   "settings.clockInterval": "同期間隔 (分)",
   "settings.language": "表示言語",
+  "settings.languageAuto": "自動（システム）",
   "settings.save": "保存",
   "settings.cancel": "キャンセル",
   "settings.footer": "設定ファイル: %APPDATA%\\AJAZZBattery\\config.json",

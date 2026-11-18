@@ -6,6 +6,10 @@ internal sealed class SettingsForm : Form
 {
     private const int FormWidth = 480;
     private const int FormHeight = 652;
+    private const int LanguageButtonHeight = 28;
+    private const int LanguageButtonMinWidth = 150;
+    private const int LanguageButtonMaxWidth = 190;
+    private const string LanguageChevron = "▾";
 
     private readonly TrayContext _context;
     private readonly NumberField _interval;
@@ -16,7 +20,8 @@ internal sealed class SettingsForm : Form
     private readonly FlatToggle _taskbarIcon;
     private readonly FlatToggle _percentOnIcon;
     private readonly FlatToggle _clockSync;
-    private readonly ComboBox _language;
+    private readonly FlatButton _language;
+    private readonly ContextMenuStrip _languageMenu;
 
     private string _languageCode = Loc.Auto;
 
@@ -49,27 +54,42 @@ internal sealed class SettingsForm : Form
         _clockSync.CheckedChanged += (_, _) => UpdateClockIntervalState();
         _clockInterval = CreateNumberField(CardThree, 1, 5, 1440);
 
-        _language = new ComboBox
+        // выбор языка — кнопка в стиле приложения и тёмное меню, как в трее
+        _language = new FlatButton
         {
-            DropDownStyle = ComboBoxStyle.DropDownList,
-            FlatStyle = FlatStyle.Flat,
+            Kind = ButtonKind.Standard,
+            CornerRadius = 4f,
+            Font = Theme.Body(9.75f),
+            Text = LanguageLabel(_languageCode) + "  " + LanguageChevron,
+        };
+        _language.Click += (_, _) => ShowLanguageMenu();
+
+        _languageMenu = new ContextMenuStrip
+        {
+            // RenderMode задаём до Renderer: установка режима пересоздаёт рендерер по умолчанию
+            RenderMode = ToolStripRenderMode.Professional,
+            Renderer = new DarkMenuRenderer(),
+            ShowImageMargin = true,
             BackColor = Theme.Card,
             ForeColor = Theme.TextPrimary,
             Font = Theme.Body(9.75f),
-            Bounds = new Rectangle(CardFour.Right - 212, CardFour.Y + 12, 192, 28),
+            Padding = new Padding(4),
         };
+
         foreach (var option in Loc.Languages)
         {
-            _language.Items.Add(option.Label);
+            var item = new ToolStripMenuItem(LanguageLabel(option.Code))
+            {
+                ForeColor = Theme.TextPrimary,
+                CheckOnClick = false,
+                Tag = option.Code,
+            };
+            item.Click += (_, _) => SelectLanguage(option.Code);
+            _languageMenu.Items.Add(item);
         }
 
-        _language.SelectedIndexChanged += (_, _) =>
-        {
-            if (_language.SelectedIndex >= 0 && _language.SelectedIndex < Loc.Languages.Count)
-            {
-                _languageCode = Loc.Languages[_language.SelectedIndex].Code;
-            }
-        };
+        _languageMenu.Opening += (_, _) => SyncLanguageChecks();
+        _languageMenu.Closed += (_, _) => _language.Invalidate();
 
         var save = new FlatButton
         {
@@ -156,8 +176,7 @@ internal sealed class SettingsForm : Form
         }
 
         BackColor = Theme.Window;
-        _language.BackColor = Theme.Card;
-        _language.ForeColor = Theme.TextPrimary;
+        ApplyLanguageMenuTheme();
         NativeUi.ApplyBorderColor(this, Theme.Window);
         Invalidate(true);
     }
@@ -200,21 +219,82 @@ internal sealed class SettingsForm : Form
         _clockSync.Checked = config.SyncDockClock;
         UpdateClockIntervalState();
 
-        _languageCode = config.Language;
-        _language.SelectedIndex = IndexOfLanguage(_languageCode);
+        _languageCode = Loc.Normalize(config.Language);
+        UpdateLanguageButton();
+        SyncLanguageChecks();
     }
 
-    private static int IndexOfLanguage(string code)
+    /// <summary>Подпись языка: у «авто» она локализована, остальные названы на своём языке.</summary>
+    private static string LanguageLabel(string code)
     {
-        for (int i = 0; i < Loc.Languages.Count; i++)
+        if (string.Equals(code, Loc.Auto, StringComparison.OrdinalIgnoreCase))
         {
-            if (string.Equals(Loc.Languages[i].Code, code, StringComparison.OrdinalIgnoreCase))
+            return Loc.T("settings.languageAuto");
+        }
+
+        foreach (var option in Loc.Languages)
+        {
+            if (string.Equals(option.Code, code, StringComparison.OrdinalIgnoreCase))
             {
-                return i;
+                return option.Label;
             }
         }
 
-        return 0;
+        return code;
+    }
+
+    /// <summary>Текст кнопки = текущий язык, ширина — по подписи, выравнивание по правому краю карточки.</summary>
+    private void UpdateLanguageButton()
+    {
+        _language.Text = LanguageLabel(_languageCode) + "  " + LanguageChevron;
+
+        using (var font = Theme.Body(9.75f))
+        {
+            int measured = TextRenderer.MeasureText(_language.Text, font).Width;
+            int width = Math.Clamp(measured + 18, LanguageButtonMinWidth, LanguageButtonMaxWidth);
+            int y = CardFour.Y + (CardFour.Height - LanguageButtonHeight) / 2;
+            // правый край — по правому краю числовых полей в других карточках
+            _language.Bounds = new Rectangle(CardFour.Right - 16 - width, y, width, LanguageButtonHeight);
+        }
+    }
+
+    private void SelectLanguage(string code)
+    {
+        _languageCode = Loc.Normalize(code);
+        UpdateLanguageButton();
+        SyncLanguageChecks();
+        _language.Invalidate();
+    }
+
+    private void SyncLanguageChecks()
+    {
+        foreach (ToolStripItem entry in _languageMenu.Items)
+        {
+            if (entry is ToolStripMenuItem item)
+            {
+                item.Checked = string.Equals(item.Tag as string, _languageCode, StringComparison.OrdinalIgnoreCase);
+            }
+        }
+    }
+
+    private void ShowLanguageMenu()
+    {
+        SyncLanguageChecks();
+        var preferred = _languageMenu.GetPreferredSize(Size.Empty);
+        var screen = _language.PointToScreen(new Point(
+            Math.Max(0, _language.Width - preferred.Width),
+            _language.Height + 3));
+        _languageMenu.Show(screen);
+    }
+
+    private void ApplyLanguageMenuTheme()
+    {
+        _languageMenu.BackColor = Theme.Card;
+        _languageMenu.ForeColor = Theme.TextPrimary;
+        foreach (ToolStripItem entry in _languageMenu.Items)
+        {
+            entry.ForeColor = Theme.TextPrimary;
+        }
     }
 
     private void UpdateClockIntervalState()
@@ -346,6 +426,7 @@ internal sealed class SettingsForm : Form
         if (disposing)
         {
             Theme.Changed -= OnThemeChanged;
+            _languageMenu.Dispose();
         }
 
         base.Dispose(disposing);

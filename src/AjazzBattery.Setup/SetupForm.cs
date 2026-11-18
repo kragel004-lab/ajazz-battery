@@ -36,13 +36,14 @@ internal sealed class SetupForm : Form
         MaximizeBox = false;
         MinimizeBox = false;
 
+        // цвета поля выставляются после создания handle (см. ApplyPathBoxTheme),
+        // иначе нативный EDIT может остаться со светлым фоном
         _pathBox = new TextBox
         {
             Text = Installer.DefaultTarget,
             BorderStyle = BorderStyle.None,
             Font = Theme.Body(9.75f),
-            BackColor = Theme.ControlFill,
-            ForeColor = Theme.TextPrimary,
+            Bounds = PathBoxBounds(),
         };
 
         _browseButton = new FlatButton
@@ -76,8 +77,10 @@ internal sealed class SetupForm : Form
         Controls.AddRange(new Control[] { _pathBox, _browseButton, _autostart, _desktopShortcut, _primaryButton, _secondaryButton });
         Theme.Changed += OnThemeChanged;
         ApplyTheme();
-        _pathBox.Select(0, 0);
     }
+
+    /// <summary>Прямоугольник поля пути внутри карточки (рамка рисуется в OnPaint).</summary>
+    private static Rectangle PathBoxBounds() => new(54, 130, 356, 20);
 
     protected override CreateParams CreateParams
     {
@@ -98,6 +101,16 @@ internal sealed class SetupForm : Form
             using var path = Theme.RoundedRect(new RectangleF(0, 0, Width, Height), 8f);
             Region = new Region(path);
         }
+
+        // handle уже есть — теперь цвета поля точно применились
+        ApplyPathBoxTheme();
+    }
+
+    protected override void OnShown(EventArgs e)
+    {
+        base.OnShown(e);
+        ApplyPathBoxTheme();
+        _pathBox.Select(_pathBox.TextLength, 0);
     }
 
     private void OnThemeChanged()
@@ -113,14 +126,30 @@ internal sealed class SetupForm : Form
     private void ApplyTheme()
     {
         BackColor = Theme.Window;
-        _pathBox.BackColor = Theme.ControlFill;
-        _pathBox.ForeColor = Theme.TextPrimary;
+        ApplyPathBoxTheme();
         if (IsHandleCreated)
         {
             NativeUi.ApplyBorderColor(this, Theme.Window);
         }
 
         Invalidate(true);
+    }
+
+    /// <summary>
+    /// Красит поле пути: тёмная заливка <see cref="Theme.ControlFill"/>, текст <see cref="Theme.TextPrimary"/>.
+    /// Нативный EDIT не перерисовывает фон сам, поэтому после смены цвета его нужно
+    /// инвалидировать (родительская Invalidate на дочернее окно не действует).
+    /// </summary>
+    private void ApplyPathBoxTheme()
+    {
+        _pathBox.BackColor = Theme.ControlFill;
+        _pathBox.ForeColor = Theme.TextPrimary;
+
+        if (_pathBox.IsHandleCreated)
+        {
+            _pathBox.Invalidate();
+            _pathBox.Update();
+        }
     }
 
     private void Browse()
@@ -276,8 +305,6 @@ internal sealed class SetupForm : Form
             using var stroke = new Pen(Theme.ControlStroke, 1f);
             g.DrawPath(stroke, fieldPath);
         }
-
-        _pathBox.Bounds = new Rectangle(54, 130, 356, 20);
 
         // прогресс
         if (_installing || _installed || _progress > 0)

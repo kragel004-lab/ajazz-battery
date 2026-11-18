@@ -54,6 +54,7 @@
   "settings.clockSync": "Uhr der Dockingstation synchronisieren",
   "settings.clockInterval": "Synchronisierungsintervall, min",
   "settings.language": "Sprache der Oberfläche",
+  "settings.languageAuto": "Automatisch (System)",
   "settings.save": "Speichern",
   "settings.cancel": "Abbrechen",
   "settings.footer": "Einstellungsdatei: %APPDATA%\\AJAZZBattery\\config.json",

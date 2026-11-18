@@ -54,6 +54,7 @@
   "settings.clockSync": "Sync the dock station clock",
   "settings.clockInterval": "Sync interval, min",
   "settings.language": "Interface language",
+  "settings.languageAuto": "Auto (system)",
   "settings.save": "Save",
   "settings.cancel": "Cancel",
   "settings.footer": "Settings file: %APPDATA%\\AJAZZBattery\\config.json",
