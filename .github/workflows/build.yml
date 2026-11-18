@@ -52,7 +52,9 @@ jobs:
             "| **Установщик** (рекомендуется) | [AJAZZ-Battery-Setup.exe](https://github.com/$repo/releases/download/$tag/AJAZZ-Battery-Setup.exe) |",
             "| **Портативная** | [AJAZZ-Battery-Portable.zip](https://github.com/$repo/releases/download/$tag/AJAZZ-Battery-Portable.zip) |",
             "",
-            "Подробности и настройки — в [README](https://github.com/$repo#readme)."
+            "Подробности и настройки — в [README](https://github.com/$repo#readme) ([English](https://github.com/$repo/blob/main/README.en.md)).",
+            "",
+            "☕ Поддержать проект: https://boosty.to/koderrr"
           )
           $lines -join "`n" | Out-File -FilePath notes.md -Encoding utf8 -NoNewline
           gh release create $tag `

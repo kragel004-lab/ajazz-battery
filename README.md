@@ -6,6 +6,8 @@
 [![Downloads](https://img.shields.io/github/downloads/kragel004-lab/ajazz-battery/total?color=0078D4)](https://github.com/kragel004-lab/ajazz-battery/releases)
 [![Build](https://github.com/kragel004-lab/ajazz-battery/actions/workflows/build.yml/badge.svg)](https://github.com/kragel004-lab/ajazz-battery/actions/workflows/build.yml)
 
+**Русский** · [English](README.en.md)
+
 Приложение показывает уровень заряда беспроводной мыши **AJAZZ AJ159 APEX** прямо в Windows:
 аккуратным виджетом «мышка + 82 %» на панели задач, процентом в трее и панелью в стиле Windows 11.
 Официальный драйвер AJAZZ для этого не нужен — программа общается с приёмником/док-станцией
@@ -202,6 +204,15 @@ src/AjazzBattery/          приложение
 src/AjazzBattery.Setup/    установщик (встраивает приложение в exe)
 .github/workflows/         сборка и релиз на GitHub Actions
 ```
+
+## Поддержать проект
+
+Приложение бесплатное и с открытым кодом. Если оно сэкономило вам время — можно угостить автора
+кофе:
+
+[![Купить кофе](https://img.shields.io/badge/Buy%20me%20a%20coffee-boosty.to%2Fkoderrr-ffb84d.svg)](https://boosty.to/koderrr)
+
+**[☕ boosty.to/koderrr](https://boosty.to/koderrr)**
 
 ## Лицензия
 
