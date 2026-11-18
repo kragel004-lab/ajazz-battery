@@ -1,225 +1,224 @@
-# AJAZZ Battery — заряд мыши AJ159 APEX в трее и на панели задач Windows
+# AJAZZ Battery — battery level of the AJ159 APEX mouse in the Windows tray and taskbar
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-2ea44f.svg)](LICENSE)
-[![Platform](https://img.shields.io/badge/platform-Windows%2010%20%7C%2011-0078D4.svg)](#требования)
+[![Platform](https://img.shields.io/badge/platform-Windows%2010%20%7C%2011-0078D4.svg)](#requirements)
 [![Release](https://img.shields.io/github/v/release/kragel004-lab/ajazz-battery?label=release&color=2ea44f)](https://github.com/kragel004-lab/ajazz-battery/releases/latest)
 [![Downloads](https://img.shields.io/github/downloads/kragel004-lab/ajazz-battery/total?color=0078D4)](https://github.com/kragel004-lab/ajazz-battery/releases)
 [![Build](https://github.com/kragel004-lab/ajazz-battery/actions/workflows/build.yml/badge.svg)](https://github.com/kragel004-lab/ajazz-battery/actions/workflows/build.yml)
 
-**Русский** · [English](README.en.md)
+**English** · [Русский](README.ru.md)
 
-Приложение показывает уровень заряда беспроводной мыши **AJAZZ AJ159 APEX** прямо в Windows:
-аккуратным виджетом «мышка + 82 %» на панели задач, процентом в трее и панелью в стиле Windows 11.
-Официальный драйвер AJAZZ для этого не нужен — программа общается с приёмником/док-станцией
-напрямую по HID.
+Shows the battery level of the wireless **AJAZZ AJ159 APEX** mouse right in Windows: a neat
+"mouse + 82 %" widget on the taskbar, a percentage in the tray and a Windows 11 style flyout.
+No official AJAZZ driver is required — the app talks to the receiver/dock directly over HID.
 
-![Виджет на панели задач](shot-taskbar.png)
+![Taskbar widget](shot-taskbar.png)
 
-## Скачать
+## Download
 
-| Версия | Файл | Размер |
+| Edition | File | Size |
 |---|---|---|
-| **Установщик** (рекомендуется) | [`AJAZZ-Battery-Setup.exe`](https://github.com/kragel004-lab/ajazz-battery/releases/latest/download/AJAZZ-Battery-Setup.exe) | ~92 МБ |
-| **Портативная** | [`AJAZZ-Battery-Portable.zip`](https://github.com/kragel004-lab/ajazz-battery/releases/latest/download/AJAZZ-Battery-Portable.zip) | ~40 МБ |
+| **Installer** (recommended) | [`AJAZZ-Battery-Setup.exe`](https://github.com/kragel004-lab/ajazz-battery/releases/latest/download/AJAZZ-Battery-Setup.exe) | ~92 MB |
+| **Portable** | [`AJAZZ-Battery-Portable.zip`](https://github.com/kragel004-lab/ajazz-battery/releases/latest/download/AJAZZ-Battery-Portable.zip) | ~40 MB |
 
-Все версии — на странице [релизов](https://github.com/kragel004-lab/ajazz-battery/releases).
-Ставить .NET не нужно: рантайм внутри exe. Файлы не подписаны, поэтому SmartScreen при первом
-запуске может спросить подтверждение — это нормально для самосборки.
+All versions are on the [releases page](https://github.com/kragel004-lab/ajazz-battery/releases).
+No .NET installation needed — the runtime is packed inside the exe. The files are not code-signed,
+so SmartScreen may ask for confirmation on the first launch.
 
-![Панель](shot-panel.png)
+![Flyout](shot-panel.png)
 
-## Возможности
+## Features
 
-- **Виджет на панели задач** «мышка + процент» — всегда на виду, не занимает место в области
-  уведомлений и не создаёт кнопку приложения. Клик по виджету открывает панель. В полноэкранных
-  приложениях и при скрытой панели задач виджет автоматически прячется.
-- **Процент в системном трее** — крупными цифрами или значком батарейки (на выбор), с цветовой
-  индикацией: зелёный ≥ 50 %, жёлтый 20–49 %, красный < 20 %.
-- **Панель** с большим индикатором, состоянием связи и временем последнего опроса; закрывается
-  по клику мимо, перетаскивается за заголовок.
-- **Индикация зарядки**: когда заряд растёт, в панели появляется молния и надпись «заряжается»
-  (см. [ограничения](#ограничения) — донгл не отдаёт отдельный флаг).
-- **Уведомление о низком заряде** с настраиваемым порогом.
-- **Автоопрос** раз в 60 с (настраивается), автопереподключение при переподключении донгла.
-- **Автозапуск** при входе в Windows.
-- **Синхронизация часов** на экранчике док-станции (та самая «00:00» после обесточивания) и
-  **очистка картинки** с экрана дока.
-- Тёмная и светлая темы — автоматически по системной, с системным акцентным цветом и шрифтом
-  Segoe UI Variable, как в Windows 11.
-- Один экземпляр в памяти: повторный запуск просто открывает панель.
+- **Taskbar widget** "mouse + percentage" — always visible, does not take a notification-area slot
+  and does not create an app button. Click it to open the flyout. The widget hides itself in
+  fullscreen apps and when the taskbar is hidden.
+- **Tray percentage** — large digits or a battery icon (switchable), colour-coded: green ≥ 50 %,
+  amber 20–49 %, red < 20 %.
+- **Flyout** with a big charge indicator, connection state and the time of the last poll; closes on
+  click outside and can be dragged by its header.
+- **Charging indicator**: when the level grows, a bolt and "charging" appear in the flyout (see
+  [limitations](#limitations) — the dongle has no explicit charging flag).
+- **Low battery notification** with a configurable threshold.
+- **Polling** every 60 s (configurable) and automatic reconnection when the dongle is re-plugged.
+- **Run at Windows startup**.
+- **Clock sync** for the dock screen (the famous "00:00" after a power loss) and **screen clear**
+  for the dock.
+- Light and dark themes that follow the system, with the system accent colour and Segoe UI Variable,
+  just like Windows 11.
+- Single instance: launching it again simply opens the flyout.
 
-![Настройки](shot-settings.png)
+![Settings](shot-settings.png)
 
-## Требования
+## Requirements
 
-- Windows 10 или Windows 11, x64;
-- мышь AJAZZ AJ159 APEX с приёмником/док-станцией `2.4G 8K` (VID `0x3151`, PID `0x5007`);
-- .NET устанавливать не нужно — всё внутри exe.
+- Windows 10 or Windows 11, x64;
+- AJAZZ AJ159 APEX mouse with the `2.4G 8K` receiver/dock (VID `0x3151`, PID `0x5007`);
+- no .NET install needed — everything is inside the exe.
 
-## Установка
+## Installation
 
-### Вариант 1. Установщик (обычный способ)
+### Option 1. Installer (usual way)
 
-Запустите **`AJAZZ-Battery-Setup.exe`**:
+Run **`AJAZZ-Battery-Setup.exe`**:
 
-![Установщик](shot-setup.png)
+![Installer](shot-setup.png)
 
-- ставится в папку пользователя `%LOCALAPPDATA%\Programs\AJAZZ Battery` — **права администратора
-  не нужны**;
-- создаёт ярлык в меню «Пуск» (и на рабочем столе, если галочка включена);
-- добавляет запись «AJAZZ Battery» в **Параметры → Приложения** — удаление оттуда же;
-- опционально прописывает автозапуск.
+- installs into the user profile `%LOCALAPPDATA%\Programs\AJAZZ Battery` — **no administrator rights
+  required**;
+- creates a Start menu shortcut (and a desktop one if the checkbox is on);
+- registers "AJAZZ Battery" in **Settings → Apps**, uninstall from there;
+- optionally enables autostart.
 
-Тихая установка:
+Silent install:
 
 ```powershell
 AJAZZ-Battery-Setup.exe /S --dir "D:\Apps\AJAZZ Battery" --no-autostart --no-desktop --no-run
 ```
 
-### Вариант 2. Портативная версия
+### Option 2. Portable
 
-`AJAZZ-Battery-Portable.zip` — распакуйте в любую папку и запустите `AjazzBattery.exe`.
-Ничего не устанавливается, ярлыки и реестр не трогаются. Настройки хранятся в
-`%APPDATA%\AJAZZBattery`.
+`AJAZZ-Battery-Portable.zip` — unpack anywhere and run `AjazzBattery.exe`. Nothing is installed,
+shortcuts and registry are untouched. Settings live in `%APPDATA%\AJAZZBattery`.
 
-Удаление портативной версии — просто удалить папку.
+To remove the portable edition just delete the folder.
 
-## Как пользоваться
+## Usage
 
-- **Левый клик по виджету на панели задач** или по иконке в трее — открыть/закрыть панель.
-- **Правый клик по иконке** — меню: обновить, настройки, синхронизация часов дока, очистка экрана
-  дока, автозапуск, журнал, выход.
-- Иконка может попасть в «переполнение» трея (стрелка `^`) — её можно вытащить перетаскиванием.
+- **Left click the taskbar widget** or the tray icon — open/close the flyout.
+- **Right click the tray icon** — menu: refresh, settings, dock clock sync, dock screen clear,
+  autostart, log, exit.
+- The tray icon may land in the overflow area (`^`) — drag it out if you want it visible.
 
-## Настройки
+## Languages
 
-| Параметр | По умолчанию | Что делает |
+Languages: English, Русский, Deutsch, Español, Français, Português, 中文, 日本語.
+
+The language is picked in **Settings → Interface language**, or automatically from the system locale
+— the default is "Auto (system)", and anything unsupported falls back to English. The taskbar
+widget, the tray menu, the flyout and the installer are all translated.
+
+## Settings
+
+| Option | Default | What it does |
 |---|---|---|
-| Интервал опроса, с | 60 | как часто спрашивать заряд |
-| Порог низкого заряда, % | 20 | когда показывать уведомление |
-| Уведомлять о низком заряде | вкл | всплывающее уведомление |
-| Запускать при входе в Windows | выкл | автозапуск (`HKCU\...\Run`) |
-| Виджет с процентом на панели задач | вкл | виджет «мышка + процент» на панели задач |
-| Процент вместо батарейки в трее | вкл | цифры `81` вместо значка батарейки |
-| Синхронизировать часы док-станции | выкл | отправка времени на экран дока |
-| Интервал синхронизации, мин | 60 | как часто повторять |
+| Poll interval, s | 60 | how often to query the battery |
+| Low battery threshold, % | 20 | when to show the notification |
+| Low battery notification | on | toast notification |
+| Run at Windows startup | off | autostart (`HKCU\...\Run`) |
+| Taskbar widget with percentage | on | "mouse + percentage" widget on the taskbar |
+| Percentage instead of battery icon in tray | on | digits `81` instead of a battery glyph |
+| Sync dock clock | off | push time to the dock screen |
+| Clock sync interval, min | 60 | how often to repeat |
 
-Файл настроек: `%APPDATA%\AJAZZBattery\config.json`, журнал — `app.log` там же.
+Settings file: `%APPDATA%\AJAZZBattery\config.json`, log: `app.log` next to it.
 
-## Командная строка
-
-```
-AjazzBattery.exe               запустить трей-приложение
-AjazzBattery.exe --check       показать заряд и сырой ответ устройства
-AjazzBattery.exe --diag        диагностика: найденные HID-интерфейсы и ответы
-AjazzBattery.exe --set-time    синхронизировать часы док-станции
-AjazzBattery.exe --clear-screen очистить картинку с экрана дока
-AjazzBattery.exe --uninstall   удалить приложение (для установленной копии)
-```
-
-`--check` удобно для проверки на другом ПК:
+## Command line
 
 ```
-Устройство : AJAZZ 2.4G 8K
-Заряд      : 81%
-Сырой ответ: 00 00 00 51 01 00 01 02 ...
+AjazzBattery.exe               start the tray app
+AjazzBattery.exe --check       print battery level and raw device response
+AjazzBattery.exe --diag        diagnostics: found HID interfaces and their replies
+AjazzBattery.exe --set-time    sync the dock clock
+AjazzBattery.exe --clear-screen clear the dock screen
+AjazzBattery.exe --uninstall   remove the app (for an installed copy)
 ```
 
-## Как это работает
+`--check` is handy for testing on another PC:
 
-Официального SDK у AJAZZ нет, протокол восстановлен реверс-инжинирингом (по открытым проектам
-для AJ159/AJ179 и по трафику веб-конфигуратора qmk.top).
+```
+Device     : AJAZZ 2.4G 8K
+Battery    : 81%
+Raw reply  : 00 00 00 51 01 00 01 02 ...
+```
 
-Приёмник выставляет вендорский HID-интерфейс (`usage page 0xFFFF`, Feature Report 64 байта,
+## How it works
+
+AJAZZ has no official SDK; the protocol was reverse-engineered (from open projects for
+AJ159/AJ179 and from the traffic of the qmk.top web configurator).
+
+The receiver exposes a vendor HID interface (`usage page 0xFFFF`, 64-byte Feature Report,
 report id 0):
 
 ```
-SetFeature: 00 F7 00 00 ... 00        (запрос статуса)
+SetFeature: 00 F7 00 00 ... 00        (status request)
 GetFeature: 00 00 00 51 01 00 01 02 ...
-                   ^^ байт 3 — заряд в процентах
+                   ^^ byte 3 — battery percentage
 ```
 
-Команды для экрана дока:
+Dock screen commands:
 
 ```
-SetFeature: 00 28 00 00 00 00 00 00 D7 <год hi> <год lo> <мес> <день> <час> <мин> <сек> ...
+SetFeature: 00 28 00 00 00 00 00 00 D7 <year hi> <year lo> <month> <day> <hour> <min> <sec> ...
 SetFeature: 00 AC 00 00 00 00 00 00 53 ...
 ```
 
-Ответ приходит за ~2–10 мс, опрос раз в минуту мыши не мешает.
+A reply arrives in ~2–10 ms, so polling once a minute does not disturb the mouse.
 
-## Ресурсы
+## Resources
 
-- В простое приложение ничего не делает: один опрос раз в 60 секунд (настраивается), один
-  HID-запрос к приёмнику длится ~5 мс.
-- Виджет на панели задач перерисовывается только когда меняется процент, тема или положение
-  панели задач. В остальное время — ни одного кадра.
-- Процессор в простое ~0 %, память 60–120 МБ (внутри — рантайм .NET одним файлом).
-- Обмен идёт с **приёмником**, а не с сенсором мыши, поэтому на курсор, опрос 8 кГц и задержки
-  это не влияет.
+- Idle cost is almost nothing: one poll per minute (configurable), one HID request takes ~5 ms.
+- The taskbar widget repaints only when the percentage, theme or taskbar geometry changes.
+- CPU at idle ~0 %, memory 60–120 MB (the .NET runtime is packed into the exe).
+- All traffic goes to the **receiver**, not to the mouse sensor, so cursor, 8 kHz polling and
+  latency are unaffected.
 
-## Ограничения
+## Limitations
 
-- Поддерживается приёмник/док AJ159 APEX (`3151:5007`). Для других моделей AJAZZ протокол может
-  отличаться — проверьте `--diag`.
-- **Отдельного флага «заряжается» донгл не отдаёт.** Проверено замерами: пока мышь на доке,
-  заряд растёт (82 → 86 %), но в ответе `0xF7` меняется только признак «мышь спит». Поэтому
-  зарядка определяется по росту процента: обычно в течение 1–3 минут после установки на док в
-  панели появляется молния. Если процент не изменился (например, мышь уже почти заряжена),
-  индикации не будет.
-- Данные о заряде отдаёт сам приёмник, поэтому процент актуален и когда мышь спит.
-- Требуется Windows 10/11 x64; ставить .NET не нужно — рантайм внутри exe.
+- Only the AJ159 APEX receiver/dock (`3151:5007`) is supported. Other AJAZZ models may use a
+  different protocol — check `--diag`.
+- **The dongle does not report a charging flag.** Verified by measurements: while the mouse sits on
+  the dock the level grows (82 → 86 %), but in the `0xF7` reply only the "mouse asleep" flag
+  changes. That is why charging is inferred from a growing percentage: usually within 1–3 minutes
+  after placing the mouse on the dock a bolt appears. If the percentage does not change (for
+  example the mouse is almost full), no indicator is shown.
+- The battery level is reported by the receiver itself, so it stays valid while the mouse sleeps.
+- Windows 10/11 x64 is required; no .NET install needed.
 
-## Сборка из исходников
+## Building from source
 
-Нужен .NET SDK 9. Всё собирается одним скриптом:
+You need the .NET SDK 9. Everything is built by one script:
 
 ```powershell
 .\build.ps1
 ```
 
-Результат в `dist\`:
+Output in `dist\`:
 
-| Файл | Что это |
+| File | What it is |
 |---|---|
-| `AjazzBattery.exe` | портативная версия (один файл, ~46 МБ) |
-| `AJAZZ-Battery-Portable.zip` | портативная версия + README |
-| `AJAZZ-Battery-Setup.exe` | установщик (~92 МБ, внутри уже собранное приложение) |
+| `AjazzBattery.exe` | portable build (single file, ~46 MB) |
+| `AJAZZ-Battery-Portable.zip` | portable build + README |
+| `AJAZZ-Battery-Setup.exe` | installer (~92 MB, with the app embedded) |
 
-Структура:
+Layout:
 
 ```
-src/AjazzBattery/          приложение
-  Program.cs               точка входа, режимы CLI, single instance, --uninstall
+src/AjazzBattery/          the app
+  Program.cs               entry point, CLI modes, single instance, --uninstall
   HidInterop.cs            P/Invoke: SetupAPI + hid.dll
-  AjazzReader.cs           протокол: статус, время дока, очистка экрана
-  TrayContext.cs           NotifyIcon, меню, опрос, зарядка, уведомления
-  TaskbarWidget.cs         виджет «мышка + процент» на панели задач
-  TaskbarInfo.cs           поиск панели задач и расчёт позиции виджета
-  PanelForm.cs             всплывающая панель
-  SettingsForm.cs          окно настроек
-  BatteryGlyph.cs          многоразмерная иконка трея
-  NumberField.cs, NativeUi.cs, Theme.cs, DarkColorTable.cs — элементы UI
-  Uninstaller.cs           удаление приложения
-src/AjazzBattery.Setup/    установщик (встраивает приложение в exe)
-.github/workflows/         сборка и релиз на GitHub Actions
+  AjazzReader.cs           protocol: status, dock time, screen clear
+  TrayContext.cs           NotifyIcon, menu, polling, charging, notifications
+  TaskbarWidget.cs         "mouse + percentage" taskbar widget
+  TaskbarInfo.cs           taskbar lookup and widget placement
+  PanelForm.cs             flyout
+  SettingsForm.cs          settings window
+  BatteryGlyph.cs          multi-size tray icon
+  NumberField.cs, NativeUi.cs, Theme.cs, DarkColorTable.cs — UI primitives
+  Uninstaller.cs           app removal
+src/AjazzBattery.Setup/    installer (embeds the app into the exe)
+.github/workflows/         build and release on GitHub Actions
 ```
 
-## Поддержать проект
+## Support the project
 
-Приложение бесплатное и с открытым кодом. Если оно сэкономило вам время — можно угостить автора
-кофе:
+The app is free and open source. If it saved you some time, you can buy the author a coffee:
 
-[![Купить кофе](https://img.shields.io/badge/Buy%20me%20a%20coffee-boosty.to%2Fkoderrr-ffb84d.svg)](https://boosty.to/koderrr)
+[![Buy me a coffee](https://img.shields.io/badge/Buy%20me%20a%20coffee-boosty.to%2Fkoderrr-ffb84d.svg)](https://boosty.to/koderrr)
 
-**[☕ boosty.to/koderrr](https://boosty.to/koderrr)**
+## License
 
-## Лицензия
+Released under the **MIT** license — use it, change it, ship it in your own projects, just keep the
+copyright notice. Full text in [LICENSE](LICENSE).
 
-Проект распространяется по лицензии **MIT** — берите, меняйте, используйте в своих проектах,
-только сохраняйте уведомление об авторстве. Полный текст — в файле [LICENSE](LICENSE).
-
-Протокол общения с приёмником восстановлен реверс-инжинирингом; AJAZZ и AJ159 APEX —
-торговые марки их владельцев, проект с ними не связан.
-
-
+The protocol was reverse-engineered; AJAZZ and AJ159 APEX are trademarks of their respective
+owners, this project is not affiliated with them.
