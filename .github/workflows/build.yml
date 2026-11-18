@@ -43,8 +43,20 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           $tag = "${{ github.ref_name }}"
+          $repo = "${{ github.repository }}"
+          $lines = @(
+            "Заряд мыши AJAZZ AJ159 APEX в трее и на панели задач Windows — без официального драйвера.",
+            "",
+            "| Версия | Файл |",
+            "|---|---|",
+            "| **Установщик** (рекомендуется) | [AJAZZ-Battery-Setup.exe](https://github.com/$repo/releases/download/$tag/AJAZZ-Battery-Setup.exe) |",
+            "| **Портативная** | [AJAZZ-Battery-Portable.zip](https://github.com/$repo/releases/download/$tag/AJAZZ-Battery-Portable.zip) |",
+            "",
+            "Подробности и настройки — в [README](https://github.com/$repo#readme)."
+          )
+          $lines -join "`n" | Out-File -FilePath notes.md -Encoding utf8 -NoNewline
           gh release create $tag `
             "dist/AJAZZ-Battery-Setup.exe" `
             "dist/AJAZZ-Battery-Portable.zip" `
             --title "AJAZZ Battery $tag" `
-            --generate-notes
+            --notes-file notes.md
