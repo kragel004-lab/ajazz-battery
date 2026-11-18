@@ -16,8 +16,9 @@ internal sealed class PanelForm : Form
     private int? _percent;
     private bool _charging;
     private bool _found;
+    private bool _hasReading;
+    private string? _product;
     private DateTime? _updated;
-    private string _subtitle = "Приёмник 2.4 ГГц";
 
     private readonly System.Windows.Forms.Timer _focusTimer = new() { Interval = 250 };
     private DateTime _focusGrace = DateTime.MinValue;
@@ -40,7 +41,7 @@ internal sealed class PanelForm : Form
 
         _refreshButton = new FlatButton
         {
-            Text = "Обновить",
+            Text = Loc.T("panel.refresh"),
             Kind = ButtonKind.Accent,
             Bounds = new Rectangle(20, 312, 150, 34),
             Font = Theme.Body(9.75f),
@@ -49,7 +50,7 @@ internal sealed class PanelForm : Form
 
         _settingsButton = new FlatButton
         {
-            Text = "Настройки",
+            Text = Loc.T("panel.settings"),
             Bounds = new Rectangle(178, 312, 112, 34),
             Font = Theme.Body(9.75f),
         };
@@ -127,11 +128,33 @@ internal sealed class PanelForm : Form
         _found = reading.Found;
         _percent = reading.Found ? reading.Percent : null;
         _charging = charging && reading.Found;
+        _hasReading = true;
+        _product = reading.Product;
         _updated = reading.Timestamp;
-        _subtitle = reading.Found && !string.IsNullOrWhiteSpace(reading.Product)
-            ? $"{reading.Product} · на связи"
-            : "Приёмник не найден";
         Invalidate();
+    }
+
+    /// <summary>Перестроить подписи после смены языка.</summary>
+    public void ApplyLanguage()
+    {
+        _refreshButton.Text = Loc.T("panel.refresh");
+        _settingsButton.Text = Loc.T("panel.settings");
+        Invalidate(true);
+    }
+
+    private string Subtitle
+    {
+        get
+        {
+            if (!_hasReading)
+            {
+                return Loc.T("panel.receiver");
+            }
+
+            return _found && !string.IsNullOrWhiteSpace(_product)
+                ? Loc.T("panel.online", _product)
+                : Loc.T("panel.notFound");
+        }
     }
 
     public void ShowNearTray()
@@ -237,7 +260,7 @@ internal sealed class PanelForm : Form
         using (var subFont = Theme.Body(9.5f))
         using (var subBrush = new SolidBrush(Theme.TextSecondary))
         {
-            g.DrawString(_subtitle, subFont, subBrush, 20, 42);
+            g.DrawString(Subtitle, subFont, subBrush, 20, 42);
         }
 
         DrawGauge(g);
@@ -246,7 +269,7 @@ internal sealed class PanelForm : Form
         using (var footerFont = Theme.Body(8.25f))
         using (var footerBrush = new SolidBrush(Theme.TextSecondary))
         {
-            g.DrawString($"AJAZZ Battery · опрос каждые {_context.Config.PollSeconds} с · порог {_context.Config.LowBatteryThreshold}%",
+            g.DrawString(Loc.T("panel.footer", _context.Config.PollSeconds, _context.Config.LowBatteryThreshold),
                 footerFont, footerBrush, 20, 362);
         }
     }
@@ -330,28 +353,28 @@ internal sealed class PanelForm : Form
         Color stateColor;
         if (!_found)
         {
-            state = "нет связи";
+            state = Loc.T("state.noLink");
             stateColor = Theme.ForPercent(10);
         }
         else if (_charging)
         {
-            state = "заряжается";
+            state = Loc.T("state.charging");
             stateColor = Theme.Accent;
         }
         else if (_percent >= 100)
         {
-            state = "заряжено";
+            state = Loc.T("state.charged");
             stateColor = Theme.ForPercent(90);
         }
         else
         {
-            state = "на связи";
+            state = Loc.T("state.online");
             stateColor = Theme.ForPercent(80);
         }
 
-        DrawRow(g, card, 0, "Состояние", state, stateColor);
-        DrawRow(g, card, 1, "Обновлено", _updated.HasValue ? _updated.Value.ToString("HH:mm:ss") : "—", Theme.TextPrimary);
-        DrawRow(g, card, 2, "Автоопрос", $"{_context.Config.PollSeconds} с", Theme.TextPrimary);
+        DrawRow(g, card, 0, Loc.T("panel.stateLabel"), state, stateColor);
+        DrawRow(g, card, 1, Loc.T("panel.updatedLabel"), _updated.HasValue ? _updated.Value.ToString("HH:mm:ss") : "—", Theme.TextPrimary);
+        DrawRow(g, card, 2, Loc.T("panel.autoPollLabel"), Loc.T("panel.seconds", _context.Config.PollSeconds), Theme.TextPrimary);
     }
 
     private static void DrawRow(Graphics g, RectangleF card, int index, string label, string value, Color valueColor)

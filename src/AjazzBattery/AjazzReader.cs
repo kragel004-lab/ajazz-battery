@@ -41,10 +41,10 @@ public static class AjazzReader
         var candidates = FindCandidates();
         if (candidates.Count == 0)
         {
-            return BatteryReading.NotConnected("приёмник AJAZZ не найден");
+            return BatteryReading.NotConnected(Loc.T("error.receiverNotFound"));
         }
 
-        string lastError = "нет ответа";
+        string lastError = Loc.T("error.noAnswer");
         foreach (var candidate in candidates)
         {
             try
@@ -52,7 +52,7 @@ public static class AjazzReader
                 using var handle = HidInterop.Open(candidate.Path, writeAccess: true);
                 if (handle.IsInvalid)
                 {
-                    lastError = "устройство занято другим приложением";
+                    lastError = Loc.T("error.deviceBusy");
                     continue;
                 }
 
@@ -68,7 +68,7 @@ public static class AjazzReader
                     };
                 }
 
-                lastError = "устройство не ответило на запрос заряда";
+                lastError = Loc.T("error.noBatteryReply");
             }
             catch (Exception ex)
             {
@@ -220,14 +220,14 @@ public static class AjazzReader
     {
         var report = new System.Text.StringBuilder();
         report.AppendLine($"AJAZZ Battery {typeof(AjazzReader).Assembly.GetName().Version} · {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
-        report.AppendLine($"ОС: {Environment.OSVersion} · .NET {Environment.Version}");
+        report.AppendLine(Loc.T("diag.os", Environment.OSVersion, Environment.Version));
         report.AppendLine();
 
         var candidates = FindCandidates();
-        report.AppendLine($"Кандидатов (usage page 0xFFFF, feature >= 65): {candidates.Count}");
+        report.AppendLine(Loc.T("diag.candidates", candidates.Count));
         foreach (var candidate in candidates)
         {
-            report.AppendLine($"  • {candidate.Product} — {candidate.Path}");
+            report.AppendLine(Loc.T("diag.candidate", candidate.Product, candidate.Path));
         }
 
         report.AppendLine();
@@ -238,18 +238,18 @@ public static class AjazzReader
                 using var handle = HidInterop.Open(candidate.Path, writeAccess: true);
                 if (handle.IsInvalid)
                 {
-                    report.AppendLine($"{candidate.Path}: не удалось открыть");
+                    report.AppendLine(Loc.T("diag.openFailed", candidate.Path));
                     continue;
                 }
 
                 var sw = Stopwatch.StartNew();
                 bool ok = TryQueryStatus(handle, out var raw);
                 sw.Stop();
-                report.AppendLine($"{candidate.Product}: ответ={ok} ({sw.ElapsedMilliseconds} мс)");
+                report.AppendLine(Loc.T("diag.reply", candidate.Product, ok, sw.ElapsedMilliseconds));
                 if (ok)
                 {
                     report.AppendLine("  " + string.Join(' ', raw.Select(b => b.ToString("x2"))));
-                    report.AppendLine($"  заряд = {raw[3]}%");
+                    report.AppendLine(Loc.T("diag.charge", raw[3]));
                 }
             }
             catch (Exception ex)

@@ -7,6 +7,9 @@ internal static class Program
     [STAThread]
     private static int Main(string[] args)
     {
+        // установщик говорит на языке системы
+        Loc.Language = Loc.Auto;
+
         var silent = args.Any(a => a is "/S" or "--silent" or "-s");
         var target = GetArgument(args, "--dir") ?? Installer.DefaultTarget;
         var noAutostart = args.Any(a => a == "--no-autostart");

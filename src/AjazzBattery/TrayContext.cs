@@ -13,6 +13,7 @@ internal sealed class TrayContext : ApplicationContext
     private readonly ContextMenuStrip _menu;
     private readonly ToolStripMenuItem _statusItem;
     private readonly ToolStripMenuItem _startupItem;
+    private readonly List<(ToolStripMenuItem Item, string Key)> _localizedItems = new();
     private readonly Control _marshaler;
     private readonly EventWaitHandle _showEvent;
 
@@ -42,11 +43,12 @@ internal sealed class TrayContext : ApplicationContext
     public TrayContext()
     {
         Config = AppConfig.Load();
+        Loc.Language = Config.Language;
         _marshaler = new Control();
         _marshaler.CreateControl();
 
-        _statusItem = new ToolStripMenuItem("Поиск мыши…") { ForeColor = Theme.TextPrimary };
-        _startupItem = new ToolStripMenuItem("Запускать при входе в Windows")
+        _statusItem = new ToolStripMenuItem(Loc.T("tray.searching")) { ForeColor = Theme.TextPrimary };
+        _startupItem = new ToolStripMenuItem(Loc.T("tray.autostart"))
         {
             CheckOnClick = true,
             Checked = Config.RunAtStartup,
@@ -60,7 +62,7 @@ internal sealed class TrayContext : ApplicationContext
         {
             Visible = true,
             Icon = _currentIcon,
-            Text = "AJAZZ Battery — поиск мыши…",
+            Text = Loc.T("tray.searchingTooltip"),
             ContextMenuStrip = _menu,
         };
         _tray.MouseClick += (_, e) =>
@@ -82,7 +84,7 @@ internal sealed class TrayContext : ApplicationContext
         SystemEvents.UserPreferenceChanged += OnUserPreferenceChanged;
         Theme.Changed += UpdateChrome;
 
-        Logger.Info("Запуск AJAZZ Battery");
+        Logger.Info(Loc.T("log.launch"));
         ApplyTaskbarPresence();
         Poll(userInitiated: false);
 
@@ -107,27 +109,64 @@ internal sealed class TrayContext : ApplicationContext
 
         menu.Items.Add(_statusItem);
         menu.Items.Add(new ToolStripSeparator());
-        menu.Items.Add(CreateItem("Обновить", () => Poll(userInitiated: true)));
-        menu.Items.Add(CreateItem("Настройки…", ShowSettings));
+        menu.Items.Add(CreateItem("menu.refresh", () => Poll(userInitiated: true)));
+        menu.Items.Add(CreateItem("menu.settings", ShowSettings));
         menu.Items.Add(new ToolStripSeparator());
-        menu.Items.Add(CreateItem("Синхронизировать часы дока", () => SyncClockAsync(silent: false)));
-        menu.Items.Add(CreateItem("Очистить экран дока", ClearDockScreen));
+        menu.Items.Add(CreateItem("menu.syncClock", () => SyncClockAsync(silent: false)));
+        menu.Items.Add(CreateItem("menu.clearScreen", ClearDockScreen));
         menu.Items.Add(new ToolStripSeparator());
         menu.Items.Add(_startupItem);
-        menu.Items.Add(CreateItem("Открыть журнал", OpenLog));
+        menu.Items.Add(CreateItem("menu.openLog", OpenLog));
         menu.Items.Add(new ToolStripSeparator());
-        menu.Items.Add(CreateItem("Выход", ExitThread));
+        menu.Items.Add(CreateItem("menu.exit", ExitThread));
 
         menu.Opened += (_, _) => _panel?.SuppressHide();
         menu.Closed += (_, _) => _panel?.AllowHide();
         return menu;
     }
 
-    private static ToolStripMenuItem CreateItem(string text, Action action)
+    private ToolStripMenuItem CreateItem(string key, Action action)
     {
-        var item = new ToolStripMenuItem(text) { ForeColor = Theme.TextPrimary };
+        var item = new ToolStripMenuItem(Loc.T(key)) { ForeColor = Theme.TextPrimary };
         item.Click += (_, _) => action();
+        _localizedItems.Add((item, key));
         return item;
+    }
+
+    /// <summary>Перестроить подписи меню и трея после смены языка.</summary>
+    private void RefreshTexts(BatteryReading? reading)
+    {
+        _startupItem.Text = Loc.T("tray.autostart");
+        foreach (var (item, key) in _localizedItems)
+        {
+            item.Text = Loc.T(key);
+        }
+
+        ApplyStatusText(reading);
+    }
+
+    private void ApplyStatusText(BatteryReading? reading)
+    {
+        if (reading is null)
+        {
+            _statusItem.Text = Loc.T("tray.searching");
+            _tray.Text = Loc.T("tray.searchingTooltip");
+            return;
+        }
+
+        if (reading.Found)
+        {
+            var suffix = _charging ? Loc.T("tray.charging")
+                : reading.Percent >= 100 ? Loc.T("tray.charged")
+                : string.Empty;
+            _tray.Text = Trim(Loc.T("tray.tooltip", reading.Percent, suffix));
+            _statusItem.Text = Loc.T("tray.status", reading.Percent, suffix);
+        }
+        else
+        {
+            _tray.Text = Loc.T("tray.notFound");
+            _statusItem.Text = Loc.T("tray.noLink", Shorten(reading.Error, 40));
+        }
     }
 
     private void OnUserPreferenceChanged(object? sender, UserPreferenceChangedEventArgs e)
@@ -236,7 +275,7 @@ internal sealed class TrayContext : ApplicationContext
         }
         catch (Exception ex)
         {
-            Logger.Error($"Ошибка опроса: {ex}");
+            Logger.Error(Loc.T("log.pollError", ex));
             Apply(BatteryReading.NotConnected(ex.Message), userInitiated);
         }
         finally
@@ -257,17 +296,10 @@ internal sealed class TrayContext : ApplicationContext
             UpdateIcons(reading);
         }
 
-        if (reading.Found)
+        ApplyStatusText(reading);
+        if (!reading.Found)
         {
-            var suffix = _charging ? " · заряжается" : reading.Percent >= 100 ? " · заряжено" : string.Empty;
-            _tray.Text = Trim($"AJAZZ AJ159 APEX — {reading.Percent}%{suffix}");
-            _statusItem.Text = $"Заряд: {reading.Percent}%{suffix}";
-        }
-        else
-        {
-            _tray.Text = "AJAZZ — мышь не найдена";
-            _statusItem.Text = $"Нет связи: {Shorten(reading.Error, 40)}";
-            Logger.Warn($"Устройство не найдено: {reading.Error}");
+            Logger.Warn(Loc.T("log.deviceNotFound", reading.Error));
         }
 
         _panel?.UpdateReading(reading, _charging);
@@ -339,10 +371,10 @@ internal sealed class TrayContext : ApplicationContext
         {
             _lowNotified = true;
             _tray.ShowBalloonTip(8000,
-                "Низкий заряд мыши",
-                $"AJAZZ AJ159 APEX: {reading.Percent}%. Пора поставить на док-станцию.",
+                Loc.T("notify.lowTitle"),
+                Loc.T("notify.lowText", reading.Percent),
                 ToolTipIcon.Warning);
-            Logger.Info($"Уведомление о низком заряде: {reading.Percent}%");
+            Logger.Info(Loc.T("log.lowNotified", reading.Percent));
         }
         else if (reading.Percent > Config.LowBatteryThreshold + 3)
         {
@@ -369,11 +401,11 @@ internal sealed class TrayContext : ApplicationContext
     {
         _lastClockSync = DateTime.Now;
         bool ok = await Task.Run(() => AjazzReader.SyncClock());
-        Logger.Info($"Синхронизация часов дока: {(ok ? "отправлено" : "не удалось")}");
+        Logger.Info(Loc.T("log.clockSync", ok ? Loc.T("log.sent") : Loc.T("log.failed")));
         if (!silent)
         {
-            _tray.ShowBalloonTip(4000, "Часы док-станции",
-                ok ? "Время отправлено на док-станцию." : "Не удалось отправить время: нет связи с приёмником.",
+            _tray.ShowBalloonTip(4000, Loc.T("notify.clockTitle"),
+                ok ? Loc.T("notify.clockOk") : Loc.T("notify.clockFail"),
                 ok ? ToolTipIcon.Info : ToolTipIcon.Warning);
         }
     }
@@ -381,10 +413,9 @@ internal sealed class TrayContext : ApplicationContext
     private async void ClearDockScreen()
     {
         bool ok = await Task.Run(() => AjazzReader.ClearDockScreen());
-        Logger.Info($"Очистка экрана дока: {(ok ? "отправлено" : "не удалось")}");
-        _tray.ShowBalloonTip(5000, "Экран док-станции",
-            ok ? "Команда отправлена. Экран обновится в течение ~полминуты."
-                : "Не удалось отправить команду: нет связи с приёмником.",
+        Logger.Info(Loc.T("log.screenClear", ok ? Loc.T("log.sent") : Loc.T("log.failed")));
+        _tray.ShowBalloonTip(5000, Loc.T("notify.screenTitle"),
+            ok ? Loc.T("notify.screenOk") : Loc.T("notify.screenFail"),
             ok ? ToolTipIcon.Info : ToolTipIcon.Warning);
     }
 
@@ -415,21 +446,24 @@ internal sealed class TrayContext : ApplicationContext
                 _startupItem.Checked = enable;
             }
 
-            Logger.Info($"Автозапуск: {(enable ? "включён" : "выключен")}");
+            Logger.Info(Loc.T("log.autostart", enable ? Loc.T("log.autostartOn") : Loc.T("log.autostartOff")));
         }
         catch (Exception ex)
         {
-            Logger.Error($"Не удалось изменить автозапуск: {ex.Message}");
+            Logger.Error(Loc.T("log.autostartFailed", ex.Message));
         }
     }
 
     public void OnSettingsChanged()
     {
+        Loc.Language = Config.Language;
         _timer.Interval = Math.Clamp(Config.PollSeconds, 10, 3600) * 1000;
-        UpdateIcons(_last ?? BatteryReading.NotConnected("нет данных"));
+        UpdateIcons(_last ?? BatteryReading.NotConnected(Loc.T("tray.noData")));
         ApplyTaskbarPresence();
+        RefreshTexts(_last);
+        _panel?.ApplyLanguage();
         _panel?.Invalidate(true);
-        Logger.Info("Настройки применены");
+        Logger.Info(Loc.T("log.settingsApplied"));
     }
 
     private static void OpenLog()
@@ -444,12 +478,12 @@ internal sealed class TrayContext : ApplicationContext
         }
         catch (Exception ex)
         {
-            Logger.Warn($"Не удалось открыть журнал: {ex.Message}");
+            Logger.Warn(Loc.T("log.openLogFailed", ex.Message));
         }
     }
 
     private static string Shorten(string text, int max) =>
-        string.IsNullOrWhiteSpace(text) ? "нет данных" : text.Length <= max ? text : text[..max] + "…";
+        string.IsNullOrWhiteSpace(text) ? Loc.T("tray.noData") : text.Length <= max ? text : text[..max] + "…";
 
     private static string Trim(string text) => text.Length <= 127 ? text : text[..127];
 
@@ -461,7 +495,7 @@ internal sealed class TrayContext : ApplicationContext
         }
 
         _disposed = true;
-        Logger.Info("Выход");
+        Logger.Info(Loc.T("log.exit"));
         SystemEvents.UserPreferenceChanged -= OnUserPreferenceChanged;
         Theme.Changed -= UpdateChrome;
         _timer.Stop();

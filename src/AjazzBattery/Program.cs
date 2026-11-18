@@ -11,6 +11,9 @@ internal static class Program
     [STAThread]
     private static int Main(string[] args)
     {
+        // язык берём из настроек (по умолчанию "auto" — системный)
+        Loc.Language = AppConfig.Load().Language;
+
         var command = args.Length > 0 ? args[0].Trim().ToLowerInvariant() : string.Empty;
 
         switch (command)
@@ -66,14 +69,14 @@ internal static class Program
         var reading = AjazzReader.Read();
         if (!reading.Found)
         {
-            Console.WriteLine($"Мышь не найдена: {reading.Error}");
+            Console.WriteLine(Loc.T("cli.notFound", reading.Error));
             return 1;
         }
 
-        Console.WriteLine($"Устройство : {reading.Product}");
-        Console.WriteLine($"Интерфейс  : {reading.Path}");
-        Console.WriteLine($"Заряд      : {reading.Percent}%");
-        Console.WriteLine($"Сырой ответ: {string.Join(' ', reading.Raw.Select(b => b.ToString("x2")))}");
+        Console.WriteLine(Loc.T("cli.device", reading.Product));
+        Console.WriteLine(Loc.T("cli.interface", reading.Path));
+        Console.WriteLine(Loc.T("cli.charge", reading.Percent));
+        Console.WriteLine(Loc.T("cli.raw", string.Join(' ', reading.Raw.Select(b => b.ToString("x2")))));
         return 0;
     }
 
@@ -88,7 +91,7 @@ internal static class Program
     {
         EnsureConsole();
         bool ok = AjazzReader.SyncClock();
-        Console.WriteLine(ok ? "Время отправлено на док-станцию." : "Не удалось отправить время: нет связи.");
+        Console.WriteLine(ok ? Loc.T("cli.timeSent") : Loc.T("cli.timeFail"));
         return ok ? 0 : 1;
     }
 
@@ -96,7 +99,7 @@ internal static class Program
     {
         EnsureConsole();
         bool ok = AjazzReader.ClearDockScreen();
-        Console.WriteLine(ok ? "Команда очистки экрана отправлена." : "Не удалось отправить команду: нет связи.");
+        Console.WriteLine(ok ? Loc.T("cli.screenSent") : Loc.T("cli.screenFail"));
         return ok ? 0 : 1;
     }
 
@@ -137,13 +140,13 @@ internal static class Program
     private static int RunHelp()
     {
         EnsureConsole();
-        Console.WriteLine("AJAZZ Battery — заряд мыши AJAZZ AJ159 APEX в трее Windows");
+        Console.WriteLine(Loc.T("help.title"));
         Console.WriteLine();
-        Console.WriteLine("  AjazzBattery.exe               запустить трей-приложение");
-        Console.WriteLine("  AjazzBattery.exe --check       показать заряд и сырой ответ устройства");
-        Console.WriteLine("  AjazzBattery.exe --diag        диагностика: интерфейсы и ответы HID");
-        Console.WriteLine("  AjazzBattery.exe --set-time    синхронизировать часы док-станции");
-        Console.WriteLine("  AjazzBattery.exe --clear-screen очистить картинку с экрана дока");
+        Console.WriteLine(Loc.T("help.app"));
+        Console.WriteLine(Loc.T("help.check"));
+        Console.WriteLine(Loc.T("help.diag"));
+        Console.WriteLine(Loc.T("help.setTime"));
+        Console.WriteLine(Loc.T("help.clearScreen"));
         return 0;
     }
 

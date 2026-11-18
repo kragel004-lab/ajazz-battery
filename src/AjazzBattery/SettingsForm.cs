@@ -5,7 +5,7 @@ namespace AjazzBattery;
 internal sealed class SettingsForm : Form
 {
     private const int FormWidth = 480;
-    private const int FormHeight = 604;
+    private const int FormHeight = 652;
 
     private readonly TrayContext _context;
     private readonly NumberField _interval;
@@ -16,10 +16,14 @@ internal sealed class SettingsForm : Form
     private readonly FlatToggle _taskbarIcon;
     private readonly FlatToggle _percentOnIcon;
     private readonly FlatToggle _clockSync;
+    private readonly ComboBox _language;
+
+    private string _languageCode = Loc.Auto;
 
     private static readonly Rectangle CardOne = new(20, 84, 440, 148);
     private static readonly Rectangle CardTwo = new(20, 244, 440, 148);
     private static readonly Rectangle CardThree = new(20, 404, 440, 99);
+    private static readonly Rectangle CardFour = new(20, 512, 440, 52);
 
     public SettingsForm(TrayContext context)
     {
@@ -31,7 +35,7 @@ internal sealed class SettingsForm : Form
         StartPosition = FormStartPosition.Manual;
         BackColor = Theme.Window;
         ClientSize = new Size(FormWidth, FormHeight);
-        Text = "Настройки — AJAZZ Battery";
+        Text = Loc.T("settings.windowTitle");
         MaximizeBox = false;
         MinimizeBox = false;
 
@@ -45,19 +49,41 @@ internal sealed class SettingsForm : Form
         _clockSync.CheckedChanged += (_, _) => UpdateClockIntervalState();
         _clockInterval = CreateNumberField(CardThree, 1, 5, 1440);
 
+        _language = new ComboBox
+        {
+            DropDownStyle = ComboBoxStyle.DropDownList,
+            FlatStyle = FlatStyle.Flat,
+            BackColor = Theme.Card,
+            ForeColor = Theme.TextPrimary,
+            Font = Theme.Body(9.75f),
+            Bounds = new Rectangle(CardFour.Right - 212, CardFour.Y + 12, 192, 28),
+        };
+        foreach (var option in Loc.Languages)
+        {
+            _language.Items.Add(option.Label);
+        }
+
+        _language.SelectedIndexChanged += (_, _) =>
+        {
+            if (_language.SelectedIndex >= 0 && _language.SelectedIndex < Loc.Languages.Count)
+            {
+                _languageCode = Loc.Languages[_language.SelectedIndex].Code;
+            }
+        };
+
         var save = new FlatButton
         {
-            Text = "Сохранить",
+            Text = Loc.T("settings.save"),
             Kind = ButtonKind.Accent,
-            Bounds = new Rectangle(330, 528, 130, 32),
+            Bounds = new Rectangle(330, 584, 130, 32),
             Font = Theme.Body(9.75f),
         };
         save.Click += (_, _) => SaveAndClose();
 
         var cancel = new FlatButton
         {
-            Text = "Отмена",
-            Bounds = new Rectangle(222, 528, 100, 32),
+            Text = Loc.T("settings.cancel"),
+            Bounds = new Rectangle(222, 584, 100, 32),
             Font = Theme.Body(9.75f),
         };
         cancel.Click += (_, _) => Close();
@@ -76,7 +102,7 @@ internal sealed class SettingsForm : Form
         {
             _interval, _threshold, _clockInterval,
             _notifications, _autostart, _taskbarIcon, _percentOnIcon, _clockSync,
-            save, cancel, close,
+            _language, save, cancel, close,
         });
 
         LoadFromConfig();
@@ -89,7 +115,8 @@ internal sealed class SettingsForm : Form
                            || _taskbarIcon.Checked != _context.Config.ShowTaskbarIcon
                            || _percentOnIcon.Checked != _context.Config.ShowPercentOnIcon
                            || _clockSync.Checked != _context.Config.SyncDockClock
-                           || _notifications.Checked != _context.Config.Notifications;
+                           || _notifications.Checked != _context.Config.Notifications
+                           || !string.Equals(_languageCode, _context.Config.Language, StringComparison.OrdinalIgnoreCase);
 
     protected override CreateParams CreateParams
     {
@@ -129,6 +156,8 @@ internal sealed class SettingsForm : Form
         }
 
         BackColor = Theme.Window;
+        _language.BackColor = Theme.Card;
+        _language.ForeColor = Theme.TextPrimary;
         NativeUi.ApplyBorderColor(this, Theme.Window);
         Invalidate(true);
     }
@@ -170,6 +199,22 @@ internal sealed class SettingsForm : Form
         _percentOnIcon.Checked = config.ShowPercentOnIcon;
         _clockSync.Checked = config.SyncDockClock;
         UpdateClockIntervalState();
+
+        _languageCode = config.Language;
+        _language.SelectedIndex = IndexOfLanguage(_languageCode);
+    }
+
+    private static int IndexOfLanguage(string code)
+    {
+        for (int i = 0; i < Loc.Languages.Count; i++)
+        {
+            if (string.Equals(Loc.Languages[i].Code, code, StringComparison.OrdinalIgnoreCase))
+            {
+                return i;
+            }
+        }
+
+        return 0;
     }
 
     private void UpdateClockIntervalState()
@@ -191,7 +236,15 @@ internal sealed class SettingsForm : Form
         var autostartChanged = config.RunAtStartup != _autostart.Checked;
         config.RunAtStartup = _autostart.Checked;
         config.SyncDockClock = _clockSync.Checked;
+
+        var languageChanged = !string.Equals(config.Language, _languageCode, StringComparison.OrdinalIgnoreCase);
+        config.Language = _languageCode;
         config.Save();
+
+        if (languageChanged)
+        {
+            Loc.Language = config.Language;
+        }
 
         if (autostartChanged)
         {
@@ -215,33 +268,36 @@ internal sealed class SettingsForm : Form
         using (var titleFont = Theme.Display(19f, FontStyle.Bold))
         using (var titleBrush = new SolidBrush(Theme.TextPrimary))
         {
-            g.DrawString("Настройки", titleFont, titleBrush, 22, 14);
+            g.DrawString(Loc.T("settings.title"), titleFont, titleBrush, 22, 14);
         }
 
         using (var subFont = Theme.Body(9.75f))
         using (var subBrush = new SolidBrush(Theme.TextSecondary))
         {
-            g.DrawString("Заряд мыши AJAZZ AJ159 APEX", subFont, subBrush, 24, 50);
+            g.DrawString(Loc.T("settings.subtitle"), subFont, subBrush, 24, 50);
         }
 
         DrawCard(g, CardOne, 3);
         DrawCard(g, CardTwo, 3);
         DrawCard(g, CardThree, 2);
+        DrawCard(g, CardFour, 1);
 
-        DrawRowText(g, CardOne, 0, "Интервал опроса, с");
-        DrawRowText(g, CardOne, 1, "Порог низкого заряда, %");
-        DrawRowText(g, CardOne, 2, "Уведомлять о низком заряде");
+        DrawRowText(g, CardOne, 0, Loc.T("settings.pollInterval"));
+        DrawRowText(g, CardOne, 1, Loc.T("settings.lowThreshold"));
+        DrawRowText(g, CardOne, 2, Loc.T("settings.notifications"));
 
-        DrawRowText(g, CardTwo, 0, "Запускать при входе в Windows");
-        DrawRowText(g, CardTwo, 1, "Виджет с процентом на панели задач");
-        DrawRowText(g, CardTwo, 2, "Процент вместо батарейки в трее");
+        DrawRowText(g, CardTwo, 0, Loc.T("settings.autostart"));
+        DrawRowText(g, CardTwo, 1, Loc.T("settings.taskbarWidget"));
+        DrawRowText(g, CardTwo, 2, Loc.T("settings.percentOnIcon"));
 
-        DrawRowText(g, CardThree, 0, "Синхронизировать часы док-станции");
-        DrawRowText(g, CardThree, 1, "Интервал синхронизации, мин");
+        DrawRowText(g, CardThree, 0, Loc.T("settings.clockSync"));
+        DrawRowText(g, CardThree, 1, Loc.T("settings.clockInterval"));
+
+        DrawCardLabel(g, CardFour, Loc.T("settings.language"));
 
         using var footerFont = Theme.Body(8.25f);
         using var footerBrush = new SolidBrush(Theme.TextSecondary);
-        g.DrawString("Файл настроек: %APPDATA%\\AJAZZBattery\\config.json", footerFont, footerBrush, 24, FormHeight - 26);
+        g.DrawString(Loc.T("settings.footer"), footerFont, footerBrush, 24, FormHeight - 26);
     }
 
     private static void DrawCard(Graphics g, Rectangle card, int rows)
@@ -272,6 +328,16 @@ internal sealed class SettingsForm : Form
         using var brush = new SolidBrush(Theme.TextPrimary);
         using var format = new StringFormat { LineAlignment = StringAlignment.Center, Trimming = StringTrimming.EllipsisCharacter };
         var rect = new RectangleF(card.X + 20, card.Y + rowIndex * rowHeight, card.Width - 150, rowHeight);
+        g.DrawString(text, font, brush, rect, format);
+    }
+
+    /// <summary>Подпись на всю высоту карточки с одной строкой (язык).</summary>
+    private static void DrawCardLabel(Graphics g, Rectangle card, string text)
+    {
+        using var font = Theme.Body(9.75f);
+        using var brush = new SolidBrush(Theme.TextPrimary);
+        using var format = new StringFormat { LineAlignment = StringAlignment.Center, Trimming = StringTrimming.EllipsisCharacter };
+        var rect = new RectangleF(card.X + 20, card.Y, 200, card.Height);
         g.DrawString(text, font, brush, rect, format);
     }
 

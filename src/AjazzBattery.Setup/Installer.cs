@@ -17,17 +17,17 @@ internal static class Installer
 
     public static void Install(string target, bool autostart, bool desktopShortcut, Action<string, double> progress)
     {
-        progress("Подготовка…", 0.02);
+        progress(Loc.T("setup.progress.prepare"), 0.02);
         target = Path.GetFullPath(target);
         Directory.CreateDirectory(target);
 
-        progress("Остановка запущенной копии…", 0.06);
+        progress(Loc.T("setup.progress.stopping"), 0.06);
         StopRunningInstances(target);
 
-        progress("Распаковка приложения…", 0.1);
-        ExtractPayload(Path.Combine(target, AppFileName), value => progress("Распаковка приложения…", 0.1 + value * 0.7));
+        progress(Loc.T("setup.progress.extracting"), 0.1);
+        ExtractPayload(Path.Combine(target, AppFileName), value => progress(Loc.T("setup.progress.extracting"), 0.1 + value * 0.7));
 
-        progress("Создание ярлыков…", 0.84);
+        progress(Loc.T("setup.progress.shortcuts"), 0.84);
         var exe = Path.Combine(target, AppFileName);
         Shortcut.Create(StartMenuShortcutPath(), exe, "--tray", "AJAZZ Battery", exe);
         if (desktopShortcut)
@@ -36,11 +36,11 @@ internal static class Installer
                 exe, "--tray", "AJAZZ Battery", exe);
         }
 
-        progress("Регистрация в системе…", 0.92);
+        progress(Loc.T("setup.progress.registering"), 0.92);
         WriteUninstallEntry(target, exe);
         ApplyAutostart(autostart, exe);
 
-        progress("Готово", 1.0);
+        progress(Loc.T("setup.progress.done"), 1.0);
     }
 
     public static void ApplyAutostart(bool enable, string exe)
@@ -72,9 +72,9 @@ internal static class Installer
             return;
         }
 
-        key.SetValue("DisplayName", "AJAZZ Battery");
+        key.SetValue("DisplayName", Loc.T("setup.displayName"));
         key.SetValue("DisplayVersion", Version);
-        key.SetValue("Publisher", "AJAZZ Battery (open source)");
+        key.SetValue("Publisher", Loc.T("setup.publisher"));
         key.SetValue("DisplayIcon", exe);
         key.SetValue("InstallLocation", target);
         key.SetValue("UninstallString", $"\"{exe}\" --uninstall");
@@ -95,7 +95,7 @@ internal static class Installer
     {
         var assembly = Assembly.GetExecutingAssembly();
         using var stream = assembly.GetManifestResourceStream("payload.exe")
-                           ?? throw new InvalidOperationException("В установщике нет встроенного приложения");
+                           ?? throw new InvalidOperationException(Loc.T("setup.error.noPayload"));
         using var output = File.Create(destination);
 
         var buffer = new byte[1024 * 1024];

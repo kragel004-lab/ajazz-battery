@@ -16,7 +16,7 @@ internal sealed class SetupForm : Form
     private readonly FlatToggle _desktopShortcut;
 
     private double _progress;
-    private string _status = "Установка в папку пользователя — права администратора не нужны.";
+    private string _status = Loc.T("setup.ready");
     private bool _installing;
     private bool _installed;
     private string _error = string.Empty;
@@ -32,7 +32,7 @@ internal sealed class SetupForm : Form
         StartPosition = FormStartPosition.CenterScreen;
         BackColor = Theme.Window;
         ClientSize = new Size(FormWidth, FormHeight);
-        Text = "Установка AJAZZ Battery";
+        Text = Loc.T("setup.windowTitle");
         MaximizeBox = false;
         MinimizeBox = false;
 
@@ -58,7 +58,7 @@ internal sealed class SetupForm : Form
 
         _primaryButton = new FlatButton
         {
-            Text = "Установить",
+            Text = Loc.T("setup.install"),
             Kind = ButtonKind.Accent,
             Bounds = new Rectangle(356, 344, 140, 34),
             Font = Theme.Body(9.75f),
@@ -67,7 +67,7 @@ internal sealed class SetupForm : Form
 
         _secondaryButton = new FlatButton
         {
-            Text = "Отмена",
+            Text = Loc.T("setup.cancel"),
             Bounds = new Rectangle(242, 344, 104, 34),
             Font = Theme.Body(9.75f),
         };
@@ -127,7 +127,7 @@ internal sealed class SetupForm : Form
     {
         using var dialog = new FolderBrowserDialog
         {
-            Description = "Куда установить AJAZZ Battery",
+            Description = Loc.T("setup.browseTitle"),
             UseDescriptionForTitle = true,
             SelectedPath = _pathBox.Text,
         };
@@ -153,7 +153,7 @@ internal sealed class SetupForm : Form
         var target = _pathBox.Text.Trim();
         if (string.IsNullOrWhiteSpace(target))
         {
-            _error = "Укажите папку установки.";
+            _error = Loc.T("setup.needFolder");
             Invalidate();
             return;
         }
@@ -161,21 +161,21 @@ internal sealed class SetupForm : Form
         _error = string.Empty;
         _installing = true;
         SetControlsEnabled(false);
-        _primaryButton.Text = "Установка…";
+        _primaryButton.Text = Loc.T("setup.installing");
 
         try
         {
             await Task.Run(() => Installer.Install(target, _autostart.Checked, _desktopShortcut.Checked, Report));
             _installed = true;
-            _status = "Установлено. Приложение уже работает в трее и на панели задач.";
-            _primaryButton.Text = "Запустить";
-            _secondaryButton.Text = "Закрыть";
+            _status = Loc.T("setup.installed");
+            _primaryButton.Text = Loc.T("setup.run");
+            _secondaryButton.Text = Loc.T("setup.close");
             _progress = 1;
         }
         catch (Exception ex)
         {
-            _error = $"Не удалось установить: {ex.Message}";
-            _primaryButton.Text = "Повторить";
+            _error = Loc.T("setup.installFailed", ex.Message);
+            _primaryButton.Text = Loc.T("setup.retry");
         }
         finally
         {
@@ -217,7 +217,7 @@ internal sealed class SetupForm : Form
         var exe = Path.Combine(_pathBox.Text.Trim(), Installer.AppFileName);
         if (!File.Exists(exe))
         {
-            _error = "Файл приложения не найден. Установите заново.";
+            _error = Loc.T("setup.appFileMissing");
             Invalidate();
             return;
         }
@@ -229,7 +229,7 @@ internal sealed class SetupForm : Form
         }
         catch (Exception ex)
         {
-            _error = $"Не удалось запустить: {ex.Message}";
+            _error = Loc.T("setup.launchFailed", ex.Message);
             Invalidate();
         }
     }
@@ -247,13 +247,13 @@ internal sealed class SetupForm : Form
         using (var titleFont = Theme.Display(17f, FontStyle.Bold))
         using (var titleBrush = new SolidBrush(Theme.TextPrimary))
         {
-            g.DrawString("Установка AJAZZ Battery", titleFont, titleBrush, 22, 16);
+            g.DrawString(Loc.T("setup.title"), titleFont, titleBrush, 22, 16);
         }
 
         using (var subFont = Theme.Body(9.75f))
         using (var subBrush = new SolidBrush(Theme.TextSecondary))
         {
-            g.DrawString("Заряд мыши AJ159 APEX в трее и на панели задач", subFont, subBrush, 24, 50);
+            g.DrawString(Loc.T("setup.subtitle"), subFont, subBrush, 24, 50);
         }
 
         DrawCard(g, CardOne);
@@ -262,9 +262,9 @@ internal sealed class SetupForm : Form
         using (var labelFont = Theme.Body(9.75f))
         using (var labelBrush = new SolidBrush(Theme.TextPrimary))
         {
-            g.DrawString("Папка установки", labelFont, labelBrush, 44, 102);
-            g.DrawString("Запускать при входе в Windows", labelFont, labelBrush, 44, 216);
-            g.DrawString("Ярлык на рабочем столе", labelFont, labelBrush, 44, 256);
+            g.DrawString(Loc.T("setup.installDir"), labelFont, labelBrush, 44, 102);
+            g.DrawString(Loc.T("setup.autostart"), labelFont, labelBrush, 44, 216);
+            g.DrawString(Loc.T("setup.desktopShortcut"), labelFont, labelBrush, 44, 256);
         }
 
         // поле пути

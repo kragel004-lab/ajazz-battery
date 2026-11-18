@@ -20,6 +20,12 @@
     <InvariantGlobalization>false</InvariantGlobalization>
   </PropertyGroup>
 
+  <ItemGroup>
+    <!-- WithCulture=false: имена strings.ru.json похожи на сателлитные ресурсы, а нам нужны
+         все языки внутри основной сборки -->
+    <EmbeddedResource Include="Strings\*.json" WithCulture="false" />
+  </ItemGroup>
+
 </Project>
 
 

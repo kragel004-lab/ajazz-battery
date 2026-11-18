@@ -144,7 +144,7 @@ internal sealed class TaskbarWidget : Form
         {
             if (Visible)
             {
-                Logger.Info($"Виджет скрыт: taskbar={taskbar is not null}, usable={taskbar?.IsUsable}");
+                Logger.Info(Loc.T("log.widgetHidden", taskbar is not null, taskbar?.IsUsable));
             }
 
             Visible = false;
@@ -294,7 +294,7 @@ internal sealed class TaskbarWidget : Form
             }
             else
             {
-                Logger.Warn($"Виджет не отрисован: {Marshal.GetLastWin32Error()}");
+                Logger.Warn(Loc.T("log.widgetNotRendered", Marshal.GetLastWin32Error()));
             }
 
             return ok;

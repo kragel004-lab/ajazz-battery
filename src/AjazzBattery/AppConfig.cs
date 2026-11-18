@@ -4,6 +4,8 @@ namespace AjazzBattery;
 
 internal sealed class AppConfig
 {
+    private string _language = Loc.Auto;
+
     public int PollSeconds { get; set; } = 60;
     public int LowBatteryThreshold { get; set; } = 20;
     public bool Notifications { get; set; } = true;
@@ -12,6 +14,13 @@ internal sealed class AppConfig
     public bool ShowTaskbarIcon { get; set; } = true;
     public bool SyncDockClock { get; set; } = false;
     public int ClockSyncMinutes { get; set; } = 60;
+
+    /// <summary>Язык интерфейса: "auto" или код из Loc.Languages.</summary>
+    public string Language
+    {
+        get => _language;
+        set => _language = Loc.Normalize(value);
+    }
 
     private static readonly string Folder = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "AJAZZBattery");
@@ -38,7 +47,7 @@ internal sealed class AppConfig
         }
         catch (Exception ex)
         {
-            Logger.Warn($"Не удалось прочитать настройки: {ex.Message}");
+            Logger.Warn(Loc.T("log.configReadFailed", ex.Message));
         }
 
         return new AppConfig();
@@ -53,7 +62,7 @@ internal sealed class AppConfig
         }
         catch (Exception ex)
         {
-            Logger.Warn($"Не удалось сохранить настройки: {ex.Message}");
+            Logger.Warn(Loc.T("log.configSaveFailed", ex.Message));
         }
     }
 

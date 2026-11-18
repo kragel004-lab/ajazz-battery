@@ -13,8 +13,8 @@ internal static class Uninstaller
         if (!silent)
         {
             var answer = MessageBox.Show(
-                "Удалить AJAZZ Battery?\n\nПриложение будет закрыто, ярлыки и настройки удалены.",
-                "Удаление AJAZZ Battery",
+                Loc.T("uninstall.confirmText"),
+                Loc.T("uninstall.confirmTitle"),
                 MessageBoxButtons.YesNo,
                 MessageBoxIcon.Question,
                 MessageBoxDefaultButton.Button2);
@@ -57,7 +57,7 @@ internal static class Uninstaller
         }
         catch (Exception ex)
         {
-            Logger.Warn($"Не удалось удалить запись деинсталлятора: {ex.Message}");
+            Logger.Warn(Loc.T("log.uninstallEntryFailed", ex.Message));
         }
 
         try
@@ -67,7 +67,7 @@ internal static class Uninstaller
         }
         catch (Exception ex)
         {
-            Logger.Warn($"Не удалось удалить автозапуск: {ex.Message}");
+            Logger.Warn(Loc.T("log.autostartRemoveFailed", ex.Message));
         }
 
         // папку удаляем только если это установленная копия (иначе можно снести портативную)
@@ -79,7 +79,7 @@ internal static class Uninstaller
         else if (!silent)
         {
             MessageBox.Show(
-                "Это портативная копия: ярлыки и настройки удалены, папку с программой удалите вручную.",
+                Loc.T("uninstall.portableText"),
                 "AJAZZ Battery",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Information);
@@ -118,7 +118,7 @@ internal static class Uninstaller
         }
         catch (Exception ex)
         {
-            Logger.Warn($"Не удалось запланировать удаление папки: {ex.Message}");
+            Logger.Warn(Loc.T("log.scheduleRemoveFailed", ex.Message));
         }
     }
 

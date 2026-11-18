@@ -20,6 +20,13 @@
   <ItemGroup>
     <Compile Include="..\AjazzBattery\Theme.cs" Link="Shared\Theme.cs" />
     <Compile Include="..\AjazzBattery\NativeUi.cs" Link="Shared\NativeUi.cs" />
+    <Compile Include="..\AjazzBattery\Localization.cs" Link="Shared\Localization.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="..\AjazzBattery\Strings\*.json" Link="Strings\%(Filename)%(Extension)" WithCulture="false">
+      <LogicalName>AjazzBattery.Strings.%(Filename)%(Extension)</LogicalName>
+    </EmbeddedResource>
   </ItemGroup>
 
   <ItemGroup>
