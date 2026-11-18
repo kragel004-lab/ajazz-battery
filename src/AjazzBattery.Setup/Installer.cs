@@ -10,7 +10,7 @@ internal static class Installer
     public const string AppFileName = "AjazzBattery.exe";
     public const string UninstallKey = @"Software\Microsoft\Windows\CurrentVersion\Uninstall\AJAZZBattery";
     public const string RunKeyName = "AJAZZBattery";
-    public const string Version = "1.1.0";
+    public const string Version = "1.2.0";
 
     public static string DefaultTarget =>
         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", "AJAZZ Battery");
@@ -190,3 +190,4 @@ internal static class Shortcut
         Marshal.ReleaseComObject(link);
     }
 }
+

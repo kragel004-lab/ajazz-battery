@@ -1,11 +1,28 @@
 # AJAZZ Battery — заряд мыши AJ159 APEX в трее и на панели задач Windows
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-2ea44f.svg)](LICENSE)
+[![Platform](https://img.shields.io/badge/platform-Windows%2010%20%7C%2011-0078D4.svg)](#требования)
+[![Release](https://img.shields.io/github/v/release/kragel004-lab/ajazz-battery?label=release&color=2ea44f)](https://github.com/kragel004-lab/ajazz-battery/releases/latest)
+[![Downloads](https://img.shields.io/github/downloads/kragel004-lab/ajazz-battery/total?color=0078D4)](https://github.com/kragel004-lab/ajazz-battery/releases)
+[![Build](https://github.com/kragel004-lab/ajazz-battery/actions/workflows/build.yml/badge.svg)](https://github.com/kragel004-lab/ajazz-battery/actions/workflows/build.yml)
+
 Приложение показывает уровень заряда беспроводной мыши **AJAZZ AJ159 APEX** прямо в Windows:
 аккуратным виджетом «мышка + 82 %» на панели задач, процентом в трее и панелью в стиле Windows 11.
 Официальный драйвер AJAZZ для этого не нужен — программа общается с приёмником/док-станцией
 напрямую по HID.
 
 ![Виджет на панели задач](shot-taskbar.png)
+
+## Скачать
+
+| Версия | Файл | Размер |
+|---|---|---|
+| **Установщик** (рекомендуется) | [`AJAZZ-Battery-Setup.exe`](https://github.com/kragel004-lab/ajazz-battery/releases/latest/download/AJAZZ-Battery-Setup.exe) | ~92 МБ |
+| **Портативная** | [`AJAZZ-Battery-Portable.zip`](https://github.com/kragel004-lab/ajazz-battery/releases/latest/download/AJAZZ-Battery-Portable.zip) | ~40 МБ |
+
+Все версии — на странице [релизов](https://github.com/kragel004-lab/ajazz-battery/releases).
+Ставить .NET не нужно: рантайм внутри exe. Файлы не подписаны, поэтому SmartScreen при первом
+запуске может спросить подтверждение — это нормально для самосборки.
 
 ![Панель](shot-panel.png)
 
@@ -30,6 +47,12 @@
 - Один экземпляр в памяти: повторный запуск просто открывает панель.
 
 ![Настройки](shot-settings.png)
+
+## Требования
+
+- Windows 10 или Windows 11, x64;
+- мышь AJAZZ AJ159 APEX с приёмником/док-станцией `2.4G 8K` (VID `0x3151`, PID `0x5007`);
+- .NET устанавливать не нужно — всё внутри exe.
 
 ## Установка
 
@@ -169,19 +192,40 @@ src/AjazzBattery/          приложение
   HidInterop.cs            P/Invoke: SetupAPI + hid.dll
   AjazzReader.cs           протокол: статус, время дока, очистка экрана
   TrayContext.cs           NotifyIcon, меню, опрос, зарядка, уведомления
-  TaskbarAnchor.cs         невидимое окно → кнопка с процентом на панели задач
+  TaskbarWidget.cs         виджет «мышка + процент» на панели задач
+  TaskbarInfo.cs           поиск панели задач и расчёт позиции виджета
   PanelForm.cs             всплывающая панель
   SettingsForm.cs          окно настроек
   BatteryGlyph.cs          многоразмерная иконка трея
   NumberField.cs, NativeUi.cs, Theme.cs, DarkColorTable.cs — элементы UI
   Uninstaller.cs           удаление приложения
 src/AjazzBattery.Setup/    установщик (встраивает приложение в exe)
+.github/workflows/         сборка и релиз на GitHub Actions
 docs/                      заметки по протоколу
 GIT.md                     как выложить проект на GitHub
+```
+
+## Автоматическая сборка
+
+При каждом push в `main` GitHub Actions собирает exe и установщик (артефакт `ajazz-battery`).
+Если отправить тег `v*`, workflow сам создаст релиз и приложит к нему файлы:
+
+```powershell
+git tag v1.2.0
+git push --tags
 ```
 
 ## Публикация на GitHub
 
 Пошаговая инструкция (создание репозитория, токен или SSH-ключ, релизы с exe) — в
 [GIT.md](GIT.md).
+
+## Лицензия
+
+Проект распространяется по лицензии **MIT** — берите, меняйте, используйте в своих проектах,
+только сохраняйте уведомление об авторстве. Полный текст — в файле [LICENSE](LICENSE).
+
+Протокол общения с приёмником восстановлен реверс-инжинирингом; AJAZZ и AJ159 APEX —
+торговые марки их владельцев, проект с ними не связан.
+
 
