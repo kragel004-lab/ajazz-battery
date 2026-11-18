@@ -32,6 +32,7 @@ internal sealed class TaskbarWidget : Form
     private string _lastText = string.Empty;
     private bool _contentDrawn;
     private int _ticks;
+    private bool _hover;
 
     public TaskbarWidget(TrayContext context)
     {
@@ -99,6 +100,30 @@ internal sealed class TaskbarWidget : Form
     {
         base.OnShown(e);
         ApplyLayout();
+    }
+
+    protected override void OnMouseEnter(EventArgs e)
+    {
+        base.OnMouseEnter(e);
+        Cursor = Cursors.Hand;
+        _hover = true;
+        ForceRedraw();
+    }
+
+    protected override void OnMouseLeave(EventArgs e)
+    {
+        base.OnMouseLeave(e);
+        _hover = false;
+        ForceRedraw();
+    }
+
+    private void ForceRedraw()
+    {
+        _contentDrawn = false;
+        if (!IsDisposed && IsHandleCreated)
+        {
+            ApplyLayout();
+        }
     }
 
     protected override void OnMouseUp(MouseEventArgs e)
@@ -177,7 +202,19 @@ internal sealed class TaskbarWidget : Form
         using var g = Graphics.FromImage(bitmap);
         g.SmoothingMode = SmoothingMode.AntiAlias;
         g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAlias;
-        g.Clear(Color.Transparent);
+
+        // alpha = 1: пиксели почти прозрачные, но кликабельные — иначе клики «сквозь» виджет
+        g.Clear(Color.FromArgb(1, 0, 0, 0));
+
+        if (_hover)
+        {
+            var hoverRect = new RectangleF(0, 0, width, height);
+            using var hoverPath = Theme.RoundedRect(hoverRect, 6f * _scale);
+            using var hoverBrush = new SolidBrush(Theme.IsLight
+                ? Color.FromArgb(26, 0, 0, 0)
+                : Color.FromArgb(30, 255, 255, 255));
+            g.FillPath(hoverBrush, hoverPath);
+        }
 
         var foreground = Theme.IsLight
             ? Color.FromArgb(235, 26, 26, 26)
@@ -317,6 +354,7 @@ internal sealed class TaskbarWidget : Form
     [DllImport("gdi32.dll")]
     private static extern bool DeleteObject(IntPtr hObject);
 }
+
 
 
 
