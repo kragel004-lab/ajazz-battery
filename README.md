@@ -201,24 +201,7 @@ src/AjazzBattery/          приложение
   Uninstaller.cs           удаление приложения
 src/AjazzBattery.Setup/    установщик (встраивает приложение в exe)
 .github/workflows/         сборка и релиз на GitHub Actions
-docs/                      заметки по протоколу
-GIT.md                     как выложить проект на GitHub
 ```
-
-## Автоматическая сборка
-
-При каждом push в `main` GitHub Actions собирает exe и установщик (артефакт `ajazz-battery`).
-Если отправить тег `v*`, workflow сам создаст релиз и приложит к нему файлы:
-
-```powershell
-git tag v1.2.0
-git push --tags
-```
-
-## Публикация на GitHub
-
-Пошаговая инструкция (создание репозитория, токен или SSH-ключ, релизы с exe) — в
-[GIT.md](GIT.md).
 
 ## Лицензия
 
