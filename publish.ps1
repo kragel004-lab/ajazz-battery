@@ -23,8 +23,12 @@ if ($changes) {
 }
 
 if (-not $Repo) {
-    $existing = git remote get-url origin 2>$null
-    if ($LASTEXITCODE -eq 0 -and $existing) {
+    $existing = $null
+    if ((git remote) -contains 'origin') {
+        $existing = git remote get-url origin
+    }
+
+    if ($existing) {
         $Repo = $existing
     }
     else {
@@ -55,7 +59,10 @@ if ($Check) {
     exit 0
 }
 
-git remote remove origin 2>$null | Out-Null
+if ((git remote) -contains 'origin') {
+    git remote remove origin | Out-Null
+}
+
 git remote add origin $Repo
 git branch -M main
 Info "origin → $(git remote get-url origin)"
@@ -81,3 +88,4 @@ Write-Host "  релизы:      $web/releases/new  (приложите dist\AJA
 if (-not $Check) {
     Start-Process "$web/releases/new"
 }
+
